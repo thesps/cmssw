@@ -76,17 +76,17 @@ BaseTrackerRecHit::getKfComponents2D( KfComponentsHolder & holder ) const
 
  // obsolete (for what tracker is concerned...) interface
 AlgebraicVector BaseTrackerRecHit::parameters() const {
-  obsolete();
+  //obsolete();
   return AlgebraicVector();
 }
 
 AlgebraicSymMatrix BaseTrackerRecHit::parametersError() const {
-  obsolete();
+  //obsolete();
   return AlgebraicSymMatrix();
 }
 
 
 AlgebraicMatrix BaseTrackerRecHit::projectionMatrix() const {
-  obsolete();
+  //obsolete();
   return AlgebraicMatrix();
 }

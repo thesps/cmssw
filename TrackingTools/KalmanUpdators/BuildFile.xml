@@ -1,4 +1,5 @@
-<flags   CXXFLAGS="-Ofast -funroll-all-loops"/>
+<flags CXXFLAGS="-g -Ofast -funroll-all-loops -I/opt/maxcompiler/include -I/opt/maxcompiler/include/slic -I/home/tmttusr/sioni/maxCompWorkspace/Tracking/RunRules/Simulation/include"/>
+<flags LDFLAGS="-L/opt/maxcompiler/lib/maxeleros-sim/lib -lmaxeleros -L/home/tmttusr/sioni/maxCompWorkspace/Tracking/RunRules/Simulation/binaries -lsingle_updator_sim"/>
 <use   name="clhep"/>
 <use   name="RecoTracker/TransientTrackingRecHit"/>
 <use   name="TrackingTools/TransientTrackingRecHit"/>
@@ -7,6 +8,7 @@
 <use   name="TrackingTools/GeomPropagators"/>
 <use   name="Geometry/CommonDetUnit"/>
 <use   name="Geometry/CommonTopologies"/>
+<use   name="DataFormats/Maxeler"/>
 <export>
   <lib   name="1"/>
 </export>
