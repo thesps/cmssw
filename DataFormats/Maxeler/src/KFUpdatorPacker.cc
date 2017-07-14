@@ -3,6 +3,50 @@
 #include "DataFormats/Math/interface/ProjectMatrix.h"
 #include <iostream>
 
+/**
+ * Pack a vector of trajectory states into a float array
+ * Ordering is vector followed by covariance matrix
+ */
+static void KFUpdatorPacker::pack(float* packed, const std::vector<TrajectoryStateOnSurface>& tsoss) const{
+  typedef std::vector< float > vf;
+
+  const int nFields = nFieldsState;
+  int i = 0;
+
+  for(TrajectoryStateOnSurface tsos : tsoss){
+    auto && x = tsos.localParameters().vector();
+    auto && C = tsos.localError().matrix();
+
+    vf cVector = unrollSMat<5>(&C);
+    float* startAddr = packed + i*nFields;
+    std::copy(std::begin(x.Array()), std::end(x.Array()), startAddr);
+    std::copy(std::begin(cVector), std::end(cVector), startAddr + 5);
+    i++;
+  }
+}
+
+static void KFUpdatorPacker::pack(float* packed, const std::vector<TrackingRecHit>& hits) const{
+  using ROOT::Math::SMatrixNoInit;
+  typedef std::vector<float> vf;
+  typedef typename AlgebraicROOTObject<2>::Vector Vec2;
+
+  const int nFields = 2 + SMatDD_nUnique(2);
+  const int nPaddingFields = (4 - (nFields % 4)); // PCIE padding
+  int i = 0;
+  for(TrackingRecHit hit : hits){
+    Vec2 rMeas;
+    SMat22 VMeas(SMatrixNoInit{});
+    vf VMeasVector = unrollSMat<2>(&VMeas);
+    float* startAddr = packed + i*(nFields + nPaddingFields);
+    std::copy(std::begin(rMeas.Array()), std::end(rMeas.Array()), startAddr);
+    std::copy(std::begin(VMeasVector), std::end(VMeasVector), startAddr+2);
+    for(int j = 0; j < nPaddingFields; j++){
+      *(startAddr + nFields + j) = 0.;
+    }
+    i++;
+  }
+}
+
 void KFUpdatorPacker::pack(float* packed, const TrajectoryStateOnSurface& tsos,
         const TrackingRecHit& hit) const{
   typedef std::vector< float > vf;
