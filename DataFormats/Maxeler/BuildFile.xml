@@ -1,0 +1,8 @@
+<use name="FWCore/Utilities"/>
+<use name="TrackingTools/TrajectoryState"/>
+<export>
+  <lib name="1"/>
+</export>
+<flags CXXFLAGS="-g -I/opt/maxcompiler/include -I/opt/maxcompiler/include/slic"/>
+<flags LDFLAGS="-L/opt/maxcompiler/lib/maxeleros-sim/lib -lmaxeleros -L/home/tmttusr/sioni/maxCompWorkspace/Tracking/RunRules/Simulation/binaries -lsingle_updator_sim"/>
+

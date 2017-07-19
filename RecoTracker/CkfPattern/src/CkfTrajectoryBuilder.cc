@@ -196,6 +196,48 @@ limitedCandidates(const boost::shared_ptr<const TrajectorySeed> & sharedSeed, Te
   while ( !candidates.empty()) {
 
     newCand.clear();
+    // Get all the hits for all the states, and count them
+    int nMeas = 0;
+    std::vector< std::vector<TM> > meass;
+    std::vector<int> nMeasPerState;
+    for(auto traj=candidates.begin(); traj!=candidates.end(); traj++){
+      std::vector<TM> meas;
+      findCompatibleMeasurements(*sharedSeed, *traj, meas);
+
+      // Onlt update with valid hits
+      if ( meas.empty()) {
+      	addToResult(sharedSeed, *traj, result);
+      }
+      else {
+      	std::vector<TM>::const_iterator last;
+      	if ( theAlwaysUseInvalidHits) last = meas.end();
+      	else {
+      	  if (meas.front().recHit()->isValid()) {
+	          last = find_if( meas.begin(), meas.end(), RecHitIsInvalid());
+      	  }
+      	  else last = meas.end();
+    	}   
+      std::vector<TM> validMeas(meas.front(), last);
+      meass.push_back(validMeas);
+      nMeas += (validMeas.end() - validMeas.begin());
+      nMeasPerState.push_back(validMeas.begin() - validMeas.end());
+    }
+
+    // Pack the hits and states for FPGA
+    float* packedHits = new float[nMeas * KFUpdatorPacker::nFieldsHit];
+    float* packedStates = new float[(candidates.end() - candidates.begin()) * KFUpdatorPacker::nFieldsState];
+
+    KFUpdatorPacker::pack(packedHits, meass);
+    KFUpdatorPacker::pack(packedStates, candidates);
+
+    // Pad for PCIE
+    while((nMeasPerState.end() - nMeasPerState.begin())%4 != 0)
+        nMeasPerState.push_back(0);
+
+    // Run the FPGA KFUpdator
+    // DFEUpdator(nMeas, candidates.begin() - candidates.end(), &nMeasPerState[0], packedHits, packedStates);
+    
+    // ORIGINAL PROCEDURE
     for (auto traj=candidates.begin(); traj!=candidates.end(); traj++) {
       std::vector<TM> meas;
       findCompatibleMeasurements(*sharedSeed, *traj, meas);
