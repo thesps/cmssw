@@ -28,8 +28,7 @@
  */
 
 #include "TrackingTools/PatternTools/interface/TrajectoryStateUpdator.h"
-//#include "TrackingTools/KalmanUpdators/interface/single_updator_sim.h"
-//#include <MaxSLiCInterface.h>
+#include <fstream>
 
 class KFUpdator final : public TrajectoryStateUpdator {
 
@@ -37,15 +36,27 @@ public:
 
   // methods of Updator
 
-  KFUpdator() {}
+  KFUpdator(){
+    std::ofstream ofile("KFUpdator_FWSW_comparisons.csv");
+    ofile << "sw_x[0], sw_x[1], sw_x[2], sw_x[3], sw_x[4], fw_[0], fw_[1], fw_[2], fw_[3], fw_[4]" << std::endl;
+  }
+
+  KFUpdator(const KFUpdator &existing){
+  }
 
   TrajectoryStateOnSurface update(const TrajectoryStateOnSurface&,
                                   const TrackingRecHit&) const;
 
+  template<unsigned int D>
+  TrajectoryStateOnSurface dfeUpdate(const TrajectoryStateOnSurface&,
+                                     const TrackingRecHit&) const;
+
 
   virtual KFUpdator * clone() const {
     return new KFUpdator(*this);
+    //return kfUpdator;
   }
+
 };
 
 #endif

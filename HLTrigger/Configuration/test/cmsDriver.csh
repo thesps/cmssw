@@ -1,6 +1,7 @@
 #! /bin/tcsh
 
-cmsenv
+eval `scramv1 runtime -csh`
+#cmsenv
 
 rehash
 

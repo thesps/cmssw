@@ -7,38 +7,42 @@
  * Pack a vector of trajectory states into a float array
  * Ordering is vector followed by covariance matrix
  */
-static void KFUpdatorPacker::pack(float* packed, const std::vector<TrajectoryStateOnSurface>& tsoss) const{
+void KFUpdatorPacker::pack(float* packed, const std::vector<TrajectoryStateOnSurface>& tsoss){
   typedef std::vector< float > vf;
 
   const int nFields = nFieldsState;
   int i = 0;
 
   for(TrajectoryStateOnSurface tsos : tsoss){
+    //auto && predictedState = tt.predictedState();
     auto && x = tsos.localParameters().vector();
     auto && C = tsos.localError().matrix();
 
     vf cVector = unrollSMat<5>(&C);
     float* startAddr = packed + i*nFields;
-    std::copy(std::begin(x.Array()), std::end(x.Array()), startAddr);
+    std::copy(x.Array(), x.Array() + 5, startAddr);
     std::copy(std::begin(cVector), std::end(cVector), startAddr + 5);
     i++;
   }
 }
 
-static void KFUpdatorPacker::pack(float* packed, const std::vector<TrackingRecHit>& hits) const{
+void KFUpdatorPacker::pack(float* packed, const std::vector<TrajectoryMeasurement>& hits){
   using ROOT::Math::SMatrixNoInit;
   typedef std::vector<float> vf;
+  typedef typename AlgebraicROOTObject<2,2>::SymMatrix SMat22;
   typedef typename AlgebraicROOTObject<2>::Vector Vec2;
 
   const int nFields = 2 + SMatDD_nUnique(2);
   const int nPaddingFields = (4 - (nFields % 4)); // PCIE padding
   int i = 0;
-  for(TrackingRecHit hit : hits){
-    Vec2 rMeas;
-    SMat22 VMeas(SMatrixNoInit{});
+  for(auto hitm : hits){
+    TrackingRecHit::ConstRecHitPointer hit = hitm.recHit();
+    Vec2 rMeas = asSVector<2>(hit->parameters());
+    SMat22 VMeas = asSMatrix<2>(hit->parametersError());
+    // TODO get VMeas data
     vf VMeasVector = unrollSMat<2>(&VMeas);
     float* startAddr = packed + i*(nFields + nPaddingFields);
-    std::copy(std::begin(rMeas.Array()), std::end(rMeas.Array()), startAddr);
+    std::copy(rMeas.Array(), rMeas.Array() + 2, startAddr);
     std::copy(std::begin(VMeasVector), std::end(VMeasVector), startAddr+2);
     for(int j = 0; j < nPaddingFields; j++){
       *(startAddr + nFields + j) = 0.;
@@ -145,7 +149,7 @@ TrajectoryStateOnSurface KFUpdatorPacker::unpack(const int nFields, const float*
 }
 
 template<unsigned int D>
-std::vector<float> KFUpdatorPacker::unrollSMat(const typename AlgebraicROOTObject<D,D>::SymMatrix* mat) const{
+std::vector<float> KFUpdatorPacker::unrollSMat(const typename AlgebraicROOTObject<D,D>::SymMatrix* mat){
     std::vector<float> unrolled;
     for(unsigned int i = 0; i < D; i++)
         for(unsigned int j = 0; j < D; j++)
