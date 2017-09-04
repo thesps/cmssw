@@ -26,7 +26,8 @@ void KFUpdatorPacker::pack(float* packed, const std::vector<TrajectoryStateOnSur
   }
 }
 
-void KFUpdatorPacker::pack(float* packed, const std::vector<TrajectoryMeasurement>& hits){
+//void KFUpdatorPacker::pack(float* packed, const std::vector<TrajectoryMeasurement>& hits){
+void KFUpdatorPacker::pack(float* packed, const std::vector<TrackingRecHit::ConstRecHitPointer>& hits){
   using ROOT::Math::SMatrixNoInit;
   typedef std::vector<float> vf;
   typedef typename AlgebraicROOTObject<2,2>::SymMatrix SMat22;
@@ -35,12 +36,21 @@ void KFUpdatorPacker::pack(float* packed, const std::vector<TrajectoryMeasuremen
   const int nFields = 2 + SMatDD_nUnique(2);
   const int nPaddingFields = (4 - (nFields % 4)); // PCIE padding
   int i = 0;
-  for(auto hitm : hits){
-    TrackingRecHit::ConstRecHitPointer hit = hitm.recHit();
-    Vec2 rMeas = asSVector<2>(hit->parameters());
-    SMat22 VMeas = asSMatrix<2>(hit->parametersError());
-    // TODO get VMeas data
+  for(auto hit : hits){
+    // Initialise a vector, fill its components from the hit
+    Vec2 rMeas;
+    rMeas[0] = hit->localPosition().x();
+    rMeas[1] = hit->localPosition().y();
+  
+    // Initialise a matrix, fill its components from the hit
+    SMat22 VMeas;
+    VMeas(0, 0) = hit->localPositionError().xx();
+    VMeas(0, 1) = hit->localPositionError().yy();
+    VMeas(1, 0) = hit->localPositionError().xy();
+    VMeas(1, 1) = hit->localPositionError().xy();
     vf VMeasVector = unrollSMat<2>(&VMeas);
+
+    // Pack into a float array
     float* startAddr = packed + i*(nFields + nPaddingFields);
     std::copy(rMeas.Array(), rMeas.Array() + 2, startAddr);
     std::copy(std::begin(VMeasVector), std::end(VMeasVector), startAddr+2);
