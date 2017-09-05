@@ -61,6 +61,47 @@ void KFUpdatorPacker::pack(float* packed, const std::vector<TrackingRecHit::Cons
   }
 }
 
+/*
+ * Unpack multiple updated states, assuming 5-parameter state
+ * and one state with many hits
+ */
+std::vector<TrajectoryStateOnSurface> KFUpdatorPacker::unpack(float* packed, int nStates, const std::vector<TrajectoryStateOnSurface>& tsoss, const std::vector<int> nHitsPerState){
+  using ROOT::Math::SMatrixNoInit;
+  typedef typename AlgebraicROOTObject<5,5>::SymMatrix SMat55;
+  typedef typename AlgebraicROOTObject<5>::Vector Vec5;
+
+  const int nFields = 20; // Number of fields returned by FPGA
+
+  std::vector<TrajectoryStateOnSurface> trajectories;
+  int hitsThisState = 0; // Number of updates states processed for current input state
+  int nState = 0;
+  TrajectoryStateOnSurface tsos = tsoss.at(0);
+  for(int i = 0; i < nStates; i++){
+    if( hitsThisState == nHitsPerState.at(nState) ){
+      nState++;
+      tsos = tsoss.at(nState);
+      hitsThisState = 0;
+    }
+    // Copy with implicit typecast
+    double packedD[nFields]; 
+    std::copy(packed + i*nFields, packed + i * nFields + nFields, packedD);
+    // For now just assume 5D state, 2D hit
+    // Unpack the data into a ROOT vector and matrix
+    Vec5 fsv(packedD, 5);
+    // Construct the symmetric matrix from vector of floats
+    // Get the vector of floats from the data array
+    const double* startC = packedD + 5;
+    AlgebraicROOTObject<15>::Vector Cvector(startC, 15);
+    SMat55 fse(Cvector, false);
+    trajectories.push_back(
+          TrajectoryStateOnSurface(LocalTrajectoryParameters(fsv, tsos.localParameters().pzSign()),
+          LocalTrajectoryError(fse), tsos.surface(), &(tsos.globalParameters().magneticField()),
+          tsos.surfaceSide() ));
+    hitsThisState++;
+  }
+  return trajectories;
+}
+
 void KFUpdatorPacker::pack(float* packed, const TrajectoryStateOnSurface& tsos,
         const TrackingRecHit& hit) const{
   typedef std::vector< float > vf;
