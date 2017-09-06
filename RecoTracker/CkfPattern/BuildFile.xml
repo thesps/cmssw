@@ -1,3 +1,5 @@
+<flags CXXFLAGS="-I/home/Maxeler/include/slic"/>
+<flags LDFLAGS="-L/home/Maxeler/lib/maxeleros-sim/lib -lmaxeleros -L/home/sioni/maxlibs -lOneState_nHit_SIM"/>
 <export>
   <lib   name="1"/>
 </export>

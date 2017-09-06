@@ -38,6 +38,18 @@ TrajectoryStateOnSurface lupdate(const TrajectoryStateOnSurface& tsos,
   KfComponentsHolder holder; 
   holder.template setup<D>(&r, &V, &pf, &rMeas, &VMeas, x, C);
   aRecHit.getKfComponents(holder);
+
+  std::cout << "hit: (" << r[0] <<", "<< r[1] <<")" << std::endl << " x: (";
+  for(int i = 0; i < 5; i++)
+    std::cout << x[i] << ", ";
+  std::cout << ")" << std::endl;
+  std::cout << "C:(";
+  for(int i = 0; i < 5; i++){
+    for(int j = 0; j < 5; j++){
+      std::cout << C(i, j) << ", ";
+    }
+    std::cout << ")" << std::endl << "(";
+  }
   
   r -= rMeas;
 
@@ -56,7 +68,17 @@ TrajectoryStateOnSurface lupdate(const TrajectoryStateOnSurface& tsos,
   // Compute covariance matrix of local filtered state vector
   AlgebraicSymMatrix55 fse = ROOT::Math::Similarity(M, C) + ROOT::Math::Similarity(K, V);
 
-
+  std::cout << "upState: (";
+  for(int i = 0; i < 5; i++)
+    std::cout << fsv[i] << ", ";
+  std::cout << ")" << std::endl;
+  std::cout << "(";
+  for(int i = 0; i < 5; i++){
+    for(int j = 0; j < 5; j++){
+      std::cout << fse(i, j) << ", ";
+    }
+    std::cout << ")" << std::endl << "(";
+  }
   /*
   // expanded similariy
   AlgebraicSymMatrix55 fse; 
@@ -115,7 +137,7 @@ TrajectoryStateOnSurface KFUpdator::update(const TrajectoryStateOnSurface& tsos,
          ", type is " << typeid(aRecHit).name() << "\n";
     }
 
-    std::ofstream f("KFUpdator_FWSW_comparisons.csv", std::fstream::app);
+    /*std::ofstream f("KFUpdator_FWSW_comparisons.csv", std::fstream::app);
     // Dump the track parameters to a file
     for(int i = 0; i < 5; i++){
       f << updated.localParameters().vector()[i] << ",";
@@ -128,6 +150,6 @@ TrajectoryStateOnSurface KFUpdator::update(const TrajectoryStateOnSurface& tsos,
       }
     }
     f << std::endl;
-    f.close();
+    f.close();*/
     return updated;
 }

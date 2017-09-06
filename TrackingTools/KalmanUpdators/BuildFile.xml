@@ -1,5 +1,5 @@
 <flags CXXFLAGS="-g -Ofast -funroll-all-loops -I/home/Maxeler/include -I/home/Maxeler/include/slic -I/home/sioni/maxworkspace/Tracking/RunRules/Simulation/include"/>
-<flags LDFLAGS="-Wl,-Bsymbolic -L/home/Maxeler/lib/maxeleros-sim/lib -lmaxeleros -L/home/sioni/maxlibs -lsingle_updator_SIM -lpthread -lm -lrt -L /home/Maxeler/lib -lslic"/>
+<flags LDFLAGS="-Wl,-Bsymbolic -L/home/Maxeler/lib/maxeleros-sim/lib -lmaxeleros -L/home/sioni/maxlibs -lsingle_updator_SIM -L /home/Maxeler/lib -lslic"/>
 <use   name="clhep"/>
 <use   name="RecoTracker/TransientTrackingRecHit"/>
 <use   name="TrackingTools/TransientTrackingRecHit"/>

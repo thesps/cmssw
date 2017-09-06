@@ -30,7 +30,7 @@ class KFUpdatorPacker{
 
     static void pack(float* packed, const std::vector<TrajectoryStateOnSurface>& tsoss);
     static void pack(float* packed, const std::vector<TrackingRecHit::ConstRecHitPointer>& hits);
-    static std::vector<TrajectoryStateOnSurface> unpack(float* packed, int nState, const std::vector<TrajectoryStateOnSurface>& tsoss, const std::vector<int> nHitsPerState);
+    static std::vector<TrajectoryStateOnSurface> unpack(float* packed, int nState, const std::vector<TrajectoryStateOnSurface>& tsoss, const std::vector<unsigned int> nHitsPerState);
 
     TrajectoryStateOnSurface unpack(const int nFields, const float* packed, const TrajectoryStateOnSurface& tsos) const;
 

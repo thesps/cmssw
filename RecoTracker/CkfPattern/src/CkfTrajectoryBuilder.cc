@@ -25,6 +25,7 @@
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
 #include "TrackingTools/PatternTools/interface/TransverseImpactPointExtrapolator.h"
 #include "DataFormats/Maxeler/interface/KFUpdatorPacker.h"
+#include "DataFormats/Maxeler/interface/OneState_nHit_SIM.h"
 
 using namespace std;
 
@@ -186,6 +187,8 @@ limitedCandidates(const boost::shared_ptr<const TrajectorySeed> & sharedSeed, Te
   unsigned int nIter=1;
   TempTrajectoryContainer newCand; // = TrajectoryContainer();
   newCand.reserve(2*theMaxCand);
+  TempTrajectoryContainer newCandDFE; // = TrajectoryContainer();
+  newCandDFE.reserve(2*theMaxCand);
 
   
   auto trajCandLess = [&](TempTrajectory const & a, TempTrajectory const & b) {
@@ -197,13 +200,16 @@ limitedCandidates(const boost::shared_ptr<const TrajectorySeed> & sharedSeed, Te
   while ( !candidates.empty()) {
 
     newCand.clear();
+    newCandDFE.clear();
     // Get all the hits for all the states, and count them
-    /*int nMeas = 0;
+    int nMeas = 0;
     std::vector<TM> meass;
-    std::vector<int> nMeasPerState;
+    std::vector<unsigned int> nMeasPerState;
     std::vector<TrajectoryStateOnSurface> statesToUpdate;
+    std::vector<TrackingRecHit::ConstRecHitPointer> hits;
     for(auto traj=candidates.begin(); traj!=candidates.end(); traj++){
       std::vector<TM> meas;
+      //std::vector<TrackingRecHit::ConstRecHitPointer> hits;
       findCompatibleMeasurements(*sharedSeed, *traj, meas);
 
       // Only update with valid hits
@@ -212,6 +218,7 @@ limitedCandidates(const boost::shared_ptr<const TrajectorySeed> & sharedSeed, Te
       }
       else {
       	//std::vector<TM>::const_iterator last;
+      	//      TM tm = meass.at(iUp);
         std::vector<TM>::iterator last;
       	if ( theAlwaysUseInvalidHits) last = meas.end();
       	else {
@@ -220,27 +227,74 @@ limitedCandidates(const boost::shared_ptr<const TrajectorySeed> & sharedSeed, Te
       	  }
       	  else last = meas.end();
     	  }   
-      std::vector<TM> validMeas(meas.begin(), last);
+      std::vector<TM> validMeas(meas.begin(), last-1); // TODO check -1
+      for(auto iMeas : validMeas)
+        hits.push_back(std::move(iMeas.recHit()));
       meass.insert(meass.end(), validMeas.begin(), validMeas.end());
-      nMeas += (validMeas.end() - validMeas.begin());
-      nMeasPerState.push_back(validMeas.begin() - validMeas.end());
+      nMeas += validMeas.size(); //(validMeas.end() - validMeas.begin());
+      //nMeasPerState.push_back(validMeas.begin() - validMeas.end());
+      nMeasPerState.push_back(validMeas.size());
       statesToUpdate.push_back((*meas.begin()).predictedState());
       }
+    }
     
     // Pack the hits and states for FPGA
     float* packedHits = new float[nMeas * KFUpdatorPacker::nFieldsHit];
     float* packedStates = new float[(candidates.end() - candidates.begin()) * KFUpdatorPacker::nFieldsState];
+    float* resultStates = new float[nMeas * KFUpdatorPacker::nFieldsState];
 
-    KFUpdatorPacker::pack(packedHits, meass);
     KFUpdatorPacker::pack(packedStates, statesToUpdate);
+    KFUpdatorPacker::pack(packedHits, hits);
 
     // Pad for PCIE
     while((nMeasPerState.end() - nMeasPerState.begin())%4 != 0)
         nMeasPerState.push_back(0);
 
     // Run the FPGA KFUpdator
-    // DFEUpdator(nMeas, candidates.begin() - candidates.end(), &nMeasPerState[0], packedHits, packedStates);
-    }*/
+    std::cout << "Running DFE..." << std::endl;
+    OneState_nHit_SIM(nMeas, nMeasPerState.size(), candidates.size(), &nMeasPerState[0], packedHits, packedStates, resultStates);
+
+    // Unpack the states from the FPGA and push valid ones
+    std::vector<TrajectoryStateOnSurface> updatedStates = KFUpdatorPacker::unpack(resultStates, nMeas, statesToUpdate, nMeasPerState);
+    TrajectoryStateOnSurface originalState = statesToUpdate.at(0);
+    unsigned int hitsThisState = 0;
+    int nState = 0;
+    // TODO finish this loop
+    for(int iUp = 0; iUp < nMeas; iUp++){
+      // We add (emplace) the updated state to the original TempTrajectory
+      if( hitsThisState == nMeasPerState.at(nState) ){
+        nState++;
+        originalState = statesToUpdate.at(nState);
+        hitsThisState = 0;
+      }
+      TempTrajectory newTraj = candidates.at(nState);
+      TrackingRecHit::ConstRecHitPointer hit = hits.at(iUp);
+      TrajectoryStateOnSurface upState = updatedStates.at(iUp);
+      TM tm = meass.at(iUp);
+      if ( hit->isValid()) {
+        newTraj.emplace( std::move(originalState), std::move(upState),
+		     std::move(hit), tm.estimate(), tm.layer()); 
+      }
+      else {
+        newTraj.emplace( std::move(originalState), std::move(hit), 0, tm.layer());
+      }
+  	  if ( toBeContinued(newTraj)) {
+	      newCandDFE.push_back(std::move(newTraj));  std::push_heap(newCandDFE.begin(),newCandDFE.end(),trajCandLess);
+	    }
+  	  else {
+	      addToResult(sharedSeed, newTraj, result);
+	      //// don't know yet
+  	  }
+        hitsThisState++;
+
+      // TODO can this go to DFE?
+      // intermedeate login: always sort,  kill all exceeding
+      while ((int)newCandDFE.size() > theMaxCand) {
+      	std::pop_heap(newCandDFE.begin(),newCandDFE.end(),trajCandLess);
+      	// if ((int)newCand.size() == theMaxCand+1) std::cout << " " << trajVal(newCand.front())  << " " << trajVal(newCand.back()) << std::endl;
+      	newCandDFE.pop_back();
+      }
+    } // End loop on updated states
 
     
     // ORIGINAL PROCEDURE
@@ -256,31 +310,31 @@ limitedCandidates(const boost::shared_ptr<const TrajectorySeed> & sharedSeed, Te
       // ---
 
       if ( meas.empty()) {
-	addToResult(sharedSeed, *traj, result);
+      	addToResult(sharedSeed, *traj, result);
       }
       else {
-	std::vector<TM>::const_iterator last;
-	if ( theAlwaysUseInvalidHits) last = meas.end();
-	else {
-	  if (meas.front().recHit()->isValid()) {
-	    last = find_if( meas.begin(), meas.end(), RecHitIsInvalid());
-	  }
-	  else last = meas.end();
-	}
-
-	for(auto itm = meas.begin(); itm != last; itm++) {
-	  TempTrajectory newTraj = *traj;
-	  updateTrajectory( newTraj, std::move(*itm));
-
-	  if ( toBeContinued(newTraj)) {
-	    newCand.push_back(std::move(newTraj));  std::push_heap(newCand.begin(),newCand.end(),trajCandLess);
-	  }
-	  else {
-	    addToResult(sharedSeed, newTraj, result);
-	    //// don't know yet
-	  }
-	}
+      	std::vector<TM>::const_iterator last;
+      	if ( theAlwaysUseInvalidHits) last = meas.end();
+      	else {
+      	  if (meas.front().recHit()->isValid()) {
+	          last = find_if( meas.begin(), meas.end(), RecHitIsInvalid());
+      	  }
+      	  else last = meas.end();
       }
+
+    	for(auto itm = meas.begin(); itm != last; itm++) {
+	      TempTrajectory newTraj = *traj;
+    	  updateTrajectory( newTraj, std::move(*itm));
+
+	      if ( toBeContinued(newTraj)) {
+    	    newCand.push_back(std::move(newTraj));  std::push_heap(newCand.begin(),newCand.end(),trajCandLess);
+	      }
+    	  else {
+	        addToResult(sharedSeed, newTraj, result);
+    	    //// don't know yet
+	      }
+	    }
+    }
 
 
       /*
@@ -317,10 +371,10 @@ limitedCandidates(const boost::shared_ptr<const TrajectorySeed> & sharedSeed, Te
       
       // intermedeate login: always sort,  kill all exceeding
       while ((int)newCand.size() > theMaxCand) {
-	std::pop_heap(newCand.begin(),newCand.end(),trajCandLess);
-	// if ((int)newCand.size() == theMaxCand+1) std::cout << " " << trajVal(newCand.front())  << " " << trajVal(newCand.back()) << std::endl;
-	newCand.pop_back();
-       }
+      	std::pop_heap(newCand.begin(),newCand.end(),trajCandLess);
+      	// if ((int)newCand.size() == theMaxCand+1) std::cout << " " << trajVal(newCand.front())  << " " << trajVal(newCand.back()) << std::endl;
+      	newCand.pop_back();
+      }
       
       /*
       //   original logic: sort only if > theMaxCand, kill all exceeding
@@ -338,7 +392,11 @@ limitedCandidates(const boost::shared_ptr<const TrajectorySeed> & sharedSeed, Te
     std::sort_heap(newCand.begin(),newCand.end(),trajCandLess);
     if (theIntermediateCleaning) IntermediateTrajectoryCleaner::clean(newCand);
 
-    candidates.swap(newCand);
+    std::sort_heap(newCandDFE.begin(),newCandDFE.end(),trajCandLess);
+    if (theIntermediateCleaning) IntermediateTrajectoryCleaner::clean(newCandDFE);
+
+    //candidates.swap(newCand);
+    candidates.swap(newCandDFE);
     
     LogDebug("CkfPattern") <<result.size()<<" candidates after "<<nIter++<<" CKF iteration: \n"
 			   <<PrintoutHelper::dumpCandidates(result)
@@ -356,6 +414,7 @@ void CkfTrajectoryBuilder::updateTrajectory( TempTrajectory& traj,
   auto && predictedState = tm.predictedState();
   auto  && hit = tm.recHit();
   if ( hit->isValid()) {
+    std::cout << "Updating" << std::endl;
     auto && upState = theUpdator->update( predictedState, *hit);
     traj.emplace( std::move(predictedState), std::move(upState),
 		 std::move(hit), tm.estimate(), tm.layer()); 

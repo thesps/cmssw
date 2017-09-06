@@ -65,7 +65,7 @@ void KFUpdatorPacker::pack(float* packed, const std::vector<TrackingRecHit::Cons
  * Unpack multiple updated states, assuming 5-parameter state
  * and one state with many hits
  */
-std::vector<TrajectoryStateOnSurface> KFUpdatorPacker::unpack(float* packed, int nStates, const std::vector<TrajectoryStateOnSurface>& tsoss, const std::vector<int> nHitsPerState){
+std::vector<TrajectoryStateOnSurface> KFUpdatorPacker::unpack(float* packed, int nStates, const std::vector<TrajectoryStateOnSurface>& tsoss, const std::vector<unsigned int> nHitsPerState){
   using ROOT::Math::SMatrixNoInit;
   typedef typename AlgebraicROOTObject<5,5>::SymMatrix SMat55;
   typedef typename AlgebraicROOTObject<5>::Vector Vec5;
@@ -73,7 +73,7 @@ std::vector<TrajectoryStateOnSurface> KFUpdatorPacker::unpack(float* packed, int
   const int nFields = 20; // Number of fields returned by FPGA
 
   std::vector<TrajectoryStateOnSurface> trajectories;
-  int hitsThisState = 0; // Number of updates states processed for current input state
+  unsigned int hitsThisState = 0; // Number of updates states processed for current input state
   int nState = 0;
   TrajectoryStateOnSurface tsos = tsoss.at(0);
   for(int i = 0; i < nStates; i++){
