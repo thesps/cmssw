@@ -155,7 +155,7 @@ void KFUpdatorPacker::pack(float* packed, const TrajectoryStateOnSurface& tsos,
 
   vpivf fields;
   fields.push_back(pivf(posR_, pVector));
-  fields.push_back(pivf(posV_, unrollSMat<2>(&VMeas)));
+  fields.push_back(pivf(posV_, unrollSMat<2>(&V)));
   fields.push_back(pivf(posX_, xVector));
   fields.push_back(pivf(posC_, unrollSMat<5>(&C)));
 
