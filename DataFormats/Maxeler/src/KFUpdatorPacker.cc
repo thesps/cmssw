@@ -45,9 +45,9 @@ void KFUpdatorPacker::pack(float* packed, const std::vector<TrackingRecHit::Cons
     // Initialise a matrix, fill its components from the hit
     SMat22 VMeas;
     VMeas(0, 0) = hit->localPositionError().xx();
-    VMeas(0, 1) = hit->localPositionError().yy();
+    VMeas(0, 1) = hit->localPositionError().xy();
     VMeas(1, 0) = hit->localPositionError().xy();
-    VMeas(1, 1) = hit->localPositionError().xy();
+    VMeas(1, 1) = hit->localPositionError().yy();
     vf VMeasVector = unrollSMat<2>(&VMeas);
 
     // Pack into a float array
