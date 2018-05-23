@@ -7,7 +7,8 @@
 #include "DataFormats/Math/interface/invertPosDefMatrix.h"
 #include "DataFormats/Math/interface/ProjectMatrix.h"
 
-//test
+#include "CL/opencl.h"
+
 // test of joseph form
 #ifdef KU_JF_TEST
 
@@ -81,7 +82,74 @@ TrajectoryStateOnSurface lupdate(const TrajectoryStateOnSurface& tsos,
   holder.template setup<D>(&r, &V, &pf, &rMeas, &VMeas, x, C);
   aRecHit.getKfComponents(holder);
   
+  /* ---
+   * Load an FPGA OpenCL kernel and execute it here
+   * TODO: move the loading of the device and kernel
+   * --- */
+  const char *KernelSource = "vector_subtract.cl";
+
+  // Looking up available devices
+  const cl_uint num = 1;
+  clGetDeviceIDs(NULL, CL_DEVICE_TYPE_ALL, 0, NULL, (cl_uint*)&num);
+
+  cl_device_id devices[1];
+  clGetDeviceIDs(NULL, CL_DEVICE_TYPE_ALL, num, devices, NULL);
+
+  // create a compute context with device
+  cl_context context = clCreateContextFromType(NULL, CL_DEVICE_TYPE_ALL, NULL, NULL, NULL);
+
+  // create a command queue
+  clGetDeviceIDs(NULL, CL_DEVICE_TYPE_DEFAULT, 1, devices, NULL);
+  cl_command_queue queue = clCreateCommandQueue(context, devices[0], 0, NULL);
+
+  cl_mem input_a_buf = clCreateBuffer(context, CL_MEM_READ_ONLY, 2 * sizeof(float), NULL, NULL);
+  cl_mem input_b_buf = clCreateBuffer(context, CL_MEM_READ_ONLY, 2 * sizeof(float), NULL, NULL);
+  cl_mem output_buf = clCreateBuffer(context, CL_MEM_WRITE_ONLY, 2 * sizeof(float), NULL, NULL);
+  float input_a[2];
+  float input_b[2];
+  float output[2];
+  // allocate the buffer memory objects
+  //cl_event write_event[2];
+  clEnqueueWriteBuffer(queue, input_a_buf, CL_FALSE,
+                       0, 2 * sizeof(float), input_a, 0, NULL, NULL);//&write_event[0]);
+
+  clEnqueueWriteBuffer(queue, input_b_buf, CL_FALSE,
+                       0, 2 * sizeof(float), input_b, 0, NULL, NULL);// &write_event[1]);
+
+  // create the compute program
+  cl_program program = clCreateProgramWithSource(context, 1, (const char **)& KernelSource, NULL, NULL);
+
+  // build the compute program executable
+  clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
+  
+  // create the compute kernel
+  cl_kernel kernel = clCreateKernel(program, "vector_sub", NULL);
+
+  unsigned argi = 0;
+  clSetKernelArg(kernel, argi++, sizeof(cl_mem), &input_a_buf);
+  clSetKernelArg(kernel, argi++, sizeof(cl_mem), &input_b_buf);
+  clSetKernelArg(kernel, argi++, sizeof(cl_mem), &output_buf);
+
+  //cl_event kernel_event;
+  //cl_event finish_event;
+  size_t global_work_size = 1;
+  clEnqueueNDRangeKernel(queue, kernel, 1, NULL,
+                  &global_work_size, NULL, 2, NULL, NULL);
+  //clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_work_size, NULL, 2,
+                         //write_event, &kernel_event);
+  clEnqueueReadBuffer(queue, output_buf, CL_FALSE, 0, 2 * sizeof(float),
+                      output, 1, NULL, NULL);//&kernel_event, &finish_event);
+  /*clReleaseEvent(write_event[0]);
+  clReleaseEvent(write_event[1]);
+  clReleaseEvent(kernel_event);
+  clReleaseEvent(finish_event);*/
+
+  // set the args values
+
+  size_t local_work_size[1] = {256};
   r -= rMeas;
+  std::cout << "CPU:  (" << r[0] << ", " << r[1] << ")" << std::endl;
+  std::cout << "FPGA: (" << output[0] << ", " << output[1] << ")" << std::endl;
 
   // and covariance matrix of residuals
   SMatDD R = V + VMeas;

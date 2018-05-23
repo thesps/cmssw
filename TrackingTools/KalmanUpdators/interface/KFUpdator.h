@@ -44,6 +44,7 @@ public:
   KFUpdator * clone() const override {
     return new KFUpdator(*this);
   }
+
 };
 
 #endif

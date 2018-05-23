@@ -1,6 +1,6 @@
 __kernel void vector_subtract(	__global const float *r, 
 				__global const float *rMeas, 
-                        	__global float *r_out, 
+                        	__global float *r_out 
                          )
 {
     // get index of the work item

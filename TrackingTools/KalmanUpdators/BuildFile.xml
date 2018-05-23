@@ -1,4 +1,6 @@
-<flags   CXXFLAGS="-Ofast -funroll-all-loops"/>
+<flags   CXXFLAGS="-Ofast -funroll-all-loops -I/opt/intelFPGA_pro/16.1.2/hld/host/include"/>
+<flags REM_CXXFLAGS="-Werror=unused-but-set-variable"/>
+<flags LDFLAGS="-L/opt/intelFPGA_pro/16.1.2/hld/board/nalla_pcie/linux64/lib -L/opt/intelFPGA_pro/16.1.2/hld/host/linux64/lib -Wl,--no-as-needed -lalteracl -lOpenCL -lelf"/>
 <use   name="clhep"/>
 <use   name="RecoTracker/TransientTrackingRecHit"/>
 <use   name="TrackingTools/TransientTrackingRecHit"/>
