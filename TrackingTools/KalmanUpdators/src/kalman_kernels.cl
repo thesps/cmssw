@@ -71,7 +71,32 @@ __kernel void matrix_projectsubtract(	__global const float *K,
 {
 // equivalent to
 // pf.projectAndSubtractFrom(M,K);
-// Mat5D K = C*pf.project(R);
 // it is assumed that matrix element A_ij is stored as A[i*n+j] in 1D array
-
+	K[0] = 1;	
+	K[1] = 0;	
+	K[2] = 0;	
+	K[3] = -K[0];	
+	K[4] = -K[1];	
+	K[5] = 0;	
+	K[6] = 1;	
+	K[7] = 0;	
+	K[8] = -K[2];	
+	K[9] = -K[3];	
+	K[10] = 0;	
+	K[11] = 0;	
+	K[12] = 1;	
+	K[13] = -K[4];	
+	K[14] = -K[5];	
+	K[15] = 0;	
+	K[16] = 0;	
+	K[17] = 0;	
+	K[18] = 1-K[6];	
+	K[19] = -K[7];	
+	K[20] = 0;	
+	K[21] = 0;	
+	K[22] = 0;	
+	K[23] = -K[8];	
+	K[24] = 1-K[9];	
 }
+
+
