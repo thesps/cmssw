@@ -3,11 +3,13 @@ __kernel void vector_subtract(	__global const float *r,
                         	__global float *r_out
                          )
 {
+// equivalent to
+// r -= rMeas;
     // get index of the work item
     //int index = get_global_id(0);
 
     // add the vector elements
-	for (int i=0; i<2; i++) {
+	for (int i = 0; i < 2; i++) {
 	    r_out[i] = r[i] + rMeas[i];
 	}
 }
@@ -17,12 +19,10 @@ __kernel void matrix_add(	__global const float *V,
                         	__global float *R 
                          )
 {
-    // get index of the work item
-    //int index = get_global_id(0);
-
-    // add the vector elements
-	for (int i=0; i<2; i++) {
-		for (int j=0; j<2; j++) {
+// equivalent to 
+// SMatDD R = V + VMeas;
+	for (int i = 0; i < 2; i++) {
+		for (int j = 0; j<2; j++) {
 		    R[i*2+j] = V[i*2+j] + VMeas[i*2+j];
 		}
 	}
@@ -33,6 +33,8 @@ __kernel void matrix_invert(	__global const float *R,
                         	__global float *Rinv
                          )
 {
+// equivalent to
+// bool ok = invertPosDefMatrix(R);
 	float c = 1/(R[0]*R[3]-R[1]*R[2]);
 	Rinv[0] = c * R[3];
 	Rinv[1] = c * (-R[1]);
@@ -41,4 +43,35 @@ __kernel void matrix_invert(	__global const float *R,
 
     // get index of the work item
     //int index = get_global_id(0);
+}
+
+__kernel void matrix_project(	__global const float *C,
+				__global const float *R,
+				__global float *K
+			)
+{
+// equivalent to
+// Mat5D K = C*pf.project(R);
+// it is assumed that matrix element A_ij is stored as A[i*n+j] in 1D array
+	K[0] = C[3]*R[0]; //K_11
+	K[0] = C[8]*R[0]; //K_12
+	K[0] = C[13]*R[0]; //K_21
+	K[0] = C[18]*R[0]; //K_22
+	K[0] = C[23]*R[0]; //K_31
+	K[0] = C[4]*R[2]; //K_32
+	K[0] = C[9]*R[2]; //K_41
+	K[0] = C[14]*R[2]; //K_42
+	K[0] = C[19]*R[2]; //K_51
+	K[0] = C[24]*R[2]; //K_52
+}
+
+__kernel void matrix_projectsubtract(	__global const float *K,
+					__global float *K_out
+			)
+{
+// equivalent to
+// pf.projectAndSubtractFrom(M,K);
+// Mat5D K = C*pf.project(R);
+// it is assumed that matrix element A_ij is stored as A[i*n+j] in 1D array
+
 }
