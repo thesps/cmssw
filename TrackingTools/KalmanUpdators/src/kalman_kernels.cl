@@ -100,3 +100,69 @@ __kernel void matrix_projectsubtract(	__global const float *K,
 }
 
 
+__kernel void vector_result(	__global const float *x,
+				__global const float *K,
+				__global const float *r,
+				__global float *fsv
+			)
+{
+// equivalent to
+// AlgebraicVector5 fsv = x + K * r; 
+	for (int i; i <= 5; i++) {
+		fsv[i] = x[i] + K[i*2]*r[0] + K[i*2+1]*r[1];
+	}
+}
+
+__kernel void matrix_result(	__global const float *M,
+				__global const float *C,
+				__global const float *K,
+				__global const float *V,
+				__global const float *fse,
+			)
+{
+float MC[5*5];
+float MCMt[5*5];
+float KV[5*5];
+float KVKt[5*5];
+// equivalent to
+// AlgebraicSymMatrix55 fse = ROOT::Math::Similarity(M, C) + ROOT::Math::Similarity(K, V);
+		for (int i; i < 5; i++) {
+			for (int j; j < 5; j++) {
+				float acc = 0.0f;
+				for (int k; k < 5; j++) {
+					acc += M[k*5+i]+C[k*5+j];
+				}
+				MC[i*5+j] = acc;
+			}
+		}
+		for (int i; i < 5; i++) {
+			for (int j; j < 5; j++) {
+				float acc = 0.0f;
+				for (int k; k < 5; j++) {
+					acc += MC[k*5+i]+M[k*5+i];
+				}
+				MCMt[i*5+j] = acc;
+			}
+		}
+		for (int i; i < 5; i++) {
+			for (int j; j < 5; j++) {
+				float acc = 0.0f;
+				for (int k; k < 5; j++) {
+					acc += K[k*5+i]+V[k*5+j];
+				}
+				KV[i*5+j] = acc;
+			}
+		}
+		for (int i; i < 5; i++) {
+			for (int j; j < 5; j++) {
+				float acc = 0.0f;
+				for (int k; k < 5; j++) {
+					acc += KV[k*5+i]+K[k*5+i];
+				}
+				KVKt[i*5+j] = acc;
+			}
+		}
+		for (int i; i < 5*5; i++) {
+			fse[i] = MCMt[i] + KVKt[i];
+		}
+}
