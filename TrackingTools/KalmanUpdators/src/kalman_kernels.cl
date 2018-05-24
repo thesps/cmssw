@@ -72,31 +72,31 @@ __kernel void matrix_projectsubtract(	__global const float *K,
 // equivalent to
 // pf.projectAndSubtractFrom(M,K);
 // it is assumed that matrix element A_ij is stored as A[i*n+j] in 1D array
-	K[0] = 1;	
-	K[1] = 0;	
-	K[2] = 0;	
-	K[3] = -K[0];	
-	K[4] = -K[1];	
-	K[5] = 0;	
-	K[6] = 1;	
-	K[7] = 0;	
-	K[8] = -K[2];	
-	K[9] = -K[3];	
-	K[10] = 0;	
-	K[11] = 0;	
-	K[12] = 1;	
-	K[13] = -K[4];	
-	K[14] = -K[5];	
-	K[15] = 0;	
-	K[16] = 0;	
-	K[17] = 0;	
-	K[18] = 1-K[6];	
-	K[19] = -K[7];	
-	K[20] = 0;	
-	K[21] = 0;	
-	K[22] = 0;	
-	K[23] = -K[8];	
-	K[24] = 1-K[9];	
+	K_out[0] = 1;	
+	K_out[1] = 0;	
+	K_out[2] = 0;	
+	K_out[3] = -K[0];	
+	K_out[4] = -K[1];	
+	K_out[5] = 0;	
+	K_out[6] = 1;	
+	K_out[7] = 0;	
+	K_out[8] = -K[2];	
+	K_out[9] = -K[3];	
+	K_out[10] = 0;	
+	K_out[11] = 0;	
+	K_out[12] = 1;	
+	K_out[13] = -K[4];	
+	K_out[14] = -K[5];	
+	K_out[15] = 0;	
+	K_out[16] = 0;	
+	K_out[17] = 0;	
+	K_out[18] = 1-K[6];	
+	K_out[19] = -K[7];	
+	K_out[20] = 0;	
+	K_out[21] = 0;	
+	K_out[22] = 0;	
+	K_out[23] = -K[8];	
+	K_out[24] = 1-K[9];	
 }
 
 
@@ -108,7 +108,7 @@ __kernel void vector_result(	__global const float *x,
 {
 // equivalent to
 // AlgebraicVector5 fsv = x + K * r; 
-	for (int i; i <= 5; i++) {
+	for (int i = 0; i <= 5; i++) {
 		fsv[i] = x[i] + K[i*2]*r[0] + K[i*2+1]*r[1];
 	}
 }
@@ -117,7 +117,7 @@ __kernel void matrix_result(	__global const float *M,
 				__global const float *C,
 				__global const float *K,
 				__global const float *V,
-				__global const float *restrict fse,
+				__global float *restrict fse
 			)
 {
 // equivalent to
@@ -126,43 +126,43 @@ __kernel void matrix_result(	__global const float *M,
 	float MCMt[5*5];
 	float KV[5*5];
 	float KVKt[5*5];
-	for (int i; i < 5; i++) {
-		for (int j; j < 5; j++) {
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
 			float acc = 0.0f;
-			for (int k; k < 5; j++) {
+			for (int k = 0; k < 5; j++) {
 				acc += M[k*5+i]+C[k*5+j];
 			}
 			MC[i*5+j] = acc;
 		}
 	}
-	for (int i; i < 5; i++) {
-		for (int j; j < 5; j++) {
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
 			float acc = 0.0f;
-			for (int k; k < 5; j++) {
+			for (int k = 0; k < 5; j++) {
 				acc += MC[k*5+i]+M[j*5+k];
 			}
 			MCMt[i*5+j] = acc;
 		}
 	}
-	for (int i; i < 5; i++) {
-		for (int j; j < 5; j++) {
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
 			float acc = 0.0f;
-			for (int k; k < 5; j++) {
+			for (int k = 0; k < 5; j++) {
 				acc += K[k*5+i]+V[k*5+j];
 			}
 			KV[i*5+j] = acc;
 		}
 	}
-	for (int i; i < 5; i++) {
-		for (int j; j < 5; j++) {
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
 			float acc = 0.0f;
-			for (int k; k < 5; j++) {
+			for (int k = 0; k < 5; j++) {
 				acc += KV[k*5+i]+K[j*5+k];
 			}
 			KVKt[i*5+j] = acc;
 		}
 	}
-	for (int i; i < 5*5; i++) {
+	for (int i = 0; i < 5*5; i++) {
 		fse[i] = MCMt[i] + KVKt[i];
 	}
 }
