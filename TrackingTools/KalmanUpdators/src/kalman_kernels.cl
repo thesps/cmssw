@@ -1,6 +1,6 @@
-__kernel void vector_subtract(	__global const float *r, 
-				__global const float *rMeas, 
-                        	__global float *r_out
+__kernel void vector_subtract(	__global const float *r,
+				__global const float *rMeas,
+                        	__global float *restrict r_out
                          )
 {
 // equivalent to
@@ -10,13 +10,13 @@ __kernel void vector_subtract(	__global const float *r,
 
     // add the vector elements
 	for (int i = 0; i < 2; i++) {
-	    r_out[i] = r[i] + rMeas[i];
+	    r_out[i] = r[i] - rMeas[i];
 	}
 }
 
 __kernel void matrix_add(	__global const float *V, 
 				__global const float *VMeas, 
-                        	__global float *R 
+                        	__global float *restrict R 
                          )
 {
 // equivalent to 
@@ -30,7 +30,7 @@ __kernel void matrix_add(	__global const float *V,
 
 
 __kernel void matrix_invert(	__global const float *R, 
-                        	__global float *Rinv
+                        	__global float *restrict Rinv
                          )
 {
 // equivalent to
@@ -47,7 +47,7 @@ __kernel void matrix_invert(	__global const float *R,
 
 __kernel void matrix_project(	__global const float *C,
 				__global const float *R,
-				__global float *K
+				__global float *restrict K
 			)
 {
 // equivalent to
@@ -66,7 +66,7 @@ __kernel void matrix_project(	__global const float *C,
 }
 
 __kernel void matrix_projectsubtract(	__global const float *K,
-					__global float *K_out
+					__global float *restrict K_out
 			)
 {
 // equivalent to
@@ -103,7 +103,7 @@ __kernel void matrix_projectsubtract(	__global const float *K,
 __kernel void vector_result(	__global const float *x,
 				__global const float *K,
 				__global const float *r,
-				__global float *fsv
+				__global float *restrict fsv
 			)
 {
 // equivalent to
@@ -117,52 +117,52 @@ __kernel void matrix_result(	__global const float *M,
 				__global const float *C,
 				__global const float *K,
 				__global const float *V,
-				__global const float *fse,
+				__global const float *restrict fse,
 			)
 {
-float MC[5*5];
-float MCMt[5*5];
-float KV[5*5];
-float KVKt[5*5];
 // equivalent to
 // AlgebraicSymMatrix55 fse = ROOT::Math::Similarity(M, C) + ROOT::Math::Similarity(K, V);
-		for (int i; i < 5; i++) {
-			for (int j; j < 5; j++) {
-				float acc = 0.0f;
-				for (int k; k < 5; j++) {
-					acc += M[k*5+i]+C[k*5+j];
-				}
-				MC[i*5+j] = acc;
+	float MC[5*5];
+	float MCMt[5*5];
+	float KV[5*5];
+	float KVKt[5*5];
+	for (int i; i < 5; i++) {
+		for (int j; j < 5; j++) {
+			float acc = 0.0f;
+			for (int k; k < 5; j++) {
+				acc += M[k*5+i]+C[k*5+j];
 			}
+			MC[i*5+j] = acc;
 		}
-		for (int i; i < 5; i++) {
-			for (int j; j < 5; j++) {
-				float acc = 0.0f;
-				for (int k; k < 5; j++) {
-					acc += MC[k*5+i]+M[k*5+i];
-				}
-				MCMt[i*5+j] = acc;
+	}
+	for (int i; i < 5; i++) {
+		for (int j; j < 5; j++) {
+			float acc = 0.0f;
+			for (int k; k < 5; j++) {
+				acc += MC[k*5+i]+M[j*5+k];
 			}
+			MCMt[i*5+j] = acc;
 		}
-		for (int i; i < 5; i++) {
-			for (int j; j < 5; j++) {
-				float acc = 0.0f;
-				for (int k; k < 5; j++) {
-					acc += K[k*5+i]+V[k*5+j];
-				}
-				KV[i*5+j] = acc;
+	}
+	for (int i; i < 5; i++) {
+		for (int j; j < 5; j++) {
+			float acc = 0.0f;
+			for (int k; k < 5; j++) {
+				acc += K[k*5+i]+V[k*5+j];
 			}
+			KV[i*5+j] = acc;
 		}
-		for (int i; i < 5; i++) {
-			for (int j; j < 5; j++) {
-				float acc = 0.0f;
-				for (int k; k < 5; j++) {
-					acc += KV[k*5+i]+K[k*5+i];
-				}
-				KVKt[i*5+j] = acc;
+	}
+	for (int i; i < 5; i++) {
+		for (int j; j < 5; j++) {
+			float acc = 0.0f;
+			for (int k; k < 5; j++) {
+				acc += KV[k*5+i]+K[j*5+k];
 			}
+			KVKt[i*5+j] = acc;
 		}
-		for (int i; i < 5*5; i++) {
-			fse[i] = MCMt[i] + KVKt[i];
-		}
+	}
+	for (int i; i < 5*5; i++) {
+		fse[i] = MCMt[i] + KVKt[i];
+	}
 }
