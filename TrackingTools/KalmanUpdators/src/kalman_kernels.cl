@@ -54,15 +54,15 @@ __kernel void matrix_project(	__global const float *C,
 // Mat5D K = C*pf.project(R);
 // it is assumed that matrix element A_ij is stored as A[i*n+j] in 1D array
 	K[0] = C[3]*R[0]; //K_11
-	K[0] = C[8]*R[0]; //K_12
-	K[0] = C[13]*R[0]; //K_21
-	K[0] = C[18]*R[0]; //K_22
-	K[0] = C[23]*R[0]; //K_31
-	K[0] = C[4]*R[2]; //K_32
-	K[0] = C[9]*R[2]; //K_41
-	K[0] = C[14]*R[2]; //K_42
-	K[0] = C[19]*R[2]; //K_51
-	K[0] = C[24]*R[2]; //K_52
+	K[1] = C[8]*R[0]; //K_12
+	K[2] = C[13]*R[0]; //K_21
+	K[3] = C[18]*R[0]; //K_22
+	K[4] = C[23]*R[0]; //K_31
+	K[5] = C[4]*R[2]; //K_32
+	K[6] = C[9]*R[2]; //K_41
+	K[7] = C[14]*R[2]; //K_42
+	K[8] = C[19]*R[2]; //K_51
+	K[9] = C[24]*R[2]; //K_52
 }
 
 __kernel void matrix_projectsubtract(	__global const float *K,
