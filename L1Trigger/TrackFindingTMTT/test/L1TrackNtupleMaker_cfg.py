@@ -24,7 +24,9 @@ options = VarParsing.VarParsing ('analysis')
 
 #--- Specify input MC
 # options.register('inputMC', 'MCsamples/932/RelVal/eclementMC/TTbar/PU200.txt',
-options.register('inputMC', 'MCsamples/937/RelVal/TTbar/PU200.txt',
+#options.register('inputMC', 'MCsamples/937/RelVal/TTbar/PU200.txt',
+options.register('inputMC', '/home/hep/ss5310/CMSSW_9_3_4/src/MCsamples/local/files.txt',
+
 
 # Fastest to use a local copy ...
 #options.register('inputMC', 'MCsamples/932/RelVal/eclementMC/TTbar/localRAL/PU200.txt', 

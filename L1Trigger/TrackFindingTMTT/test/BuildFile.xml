@@ -1,0 +1,6 @@
+<library   file="*.cc" name="L1trackLouiseCode">
+  <flags   EDM_PLUGIN="1"/>
+  <use name="TMTrackTrigger/TMTrackFinder"/>
+  <!-- # Add no-misleading-indentation option to avoid warnings about bug in Boost library. -->
+  <flags CXXFLAGS="-g -Wno-unused-variable -Wno-misleading-indentation"/>
+</library>
