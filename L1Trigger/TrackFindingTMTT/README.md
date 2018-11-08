@@ -8,9 +8,9 @@ cd CMSSW_9_3_8/src
 cmsenv
 
 git cms-init
-git remote add -t TMTT_938 TMTT https://github.com/CMS-TMTT/cmssw.git
-git fetch TMTT TMTT_938
-git cms-checkout-topic CMS-TMTT:TMTT_938
+git remote add -t tmtt_938_ntuple++ thesps https://github.com/thesps/cmssw.git
+git fetch thesps tmtt_938_ntuple++
+git cms-checkout-topic thesps:tmtt_938_ntuple++
 
 scramv1 b -j 8
 
