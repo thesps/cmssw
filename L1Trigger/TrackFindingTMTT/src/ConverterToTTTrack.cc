@@ -39,6 +39,7 @@ TTTrack< Ref_Phase2TrackerDigi_ > ConverterToTTTrack::makeTTTrack(const L1track3
   track.setRInv(invPtToInvR_ * trk.qOverPt(), nPar4);
   track.setChi2(-1, nPar4); // meaningless since no track fit was done.
   track.setStubPtConsistency(-1, nPar4); // not filled.
+  //track.setNSkippedLayers(0);
 
   return track;
 }
@@ -82,6 +83,13 @@ TTTrack< Ref_Phase2TrackerDigi_ > ConverterToTTTrack::makeTTTrack(const L1fitted
   track.setRInv(invPtToInvR_ * trk.qOverPt(), nPar);
   track.setChi2(trk.chi2(), nPar);
   track.setStubPtConsistency(-1, nPar);
+  //unsigned nSkip, tmp;
+  //trk.getInfoKF(nSkip, tmp);
+  track.setNSkippedLayers(0);
+  if(trk.getMatchedTP()){
+    track.setFromPV(trk.getMatchedTP()->physicsCollision());
+  }
+  track.setTanLambda(trk.tanLambda());
 
   return track;
 }

@@ -40,6 +40,9 @@ class TTTrack
     double       theChi25Par;
     bool         valid4ParFit;
     bool         valid5ParFit;
+    double       theTanLambda;
+    unsigned int theNSkippedLayers;
+    bool         fromPV;
 
   public:
     /// Constructors
@@ -82,6 +85,12 @@ class TTTrack
     void         setStubPtConsistency( double aPtConsistency, unsigned int nPar=5 );
 
     void         setFitParNo( unsigned int aFitParNo ) { return; }
+    void         setNSkippedLayers( unsigned int nSkippedLayers );
+    void         setFromPV( bool fromPV ){ this->fromPV = fromPV; }
+    void         setTanLambda( double tanLambda );
+    int          getNSkippedLayers() const;
+    bool         getFromPV() const{ return fromPV; }
+    double       getTanLambda() const;
 
 /*
     /// Superstrip
@@ -131,6 +140,9 @@ TTTrack< T >::TTTrack()
   theStubPtConsistency5Par = 0.0;
   valid4ParFit    = false;
   valid5ParFit    = false;
+  theTanLambda    = 0.0;
+  theNSkippedLayers = 0;
+  fromPV = false;
 }
 
 /// Another Constructor
@@ -152,6 +164,9 @@ TTTrack< T >::TTTrack( std::vector< edm::Ref< edmNew::DetSetVector< TTStub< T > 
   theStubPtConsistency5Par = 0.0;
   valid4ParFit    = false;
   valid5ParFit    = false;
+  theTanLambda    = 0.0;
+  theNSkippedLayers = 0;
+  fromPV = false;
 }
 
 /// Destructor
@@ -216,6 +231,28 @@ void TTTrack< T >::setRInv(double aRInv, unsigned int nPar) {
 
   return;
 
+}
+
+template< typename T >
+void TTTrack< T >::setTanLambda(double tanLambda){
+  theTanLambda = tanLambda;
+  return;
+}
+
+template< typename T >
+void TTTrack< T >::setNSkippedLayers(unsigned int nSkippedLayers){
+    theNSkippedLayers = nSkippedLayers;
+    return;
+}
+
+template< typename T >
+int TTTrack< T >::getNSkippedLayers() const{
+  return theNSkippedLayers;
+}
+
+template< typename T >
+double TTTrack< T >::getTanLambda() const{
+  return theTanLambda;
 }
 
 
