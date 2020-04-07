@@ -160,11 +160,11 @@ void l1tpf::corrector::correctPt(l1t::PFCluster & cluster, float preserveEmEt) c
 
 void l1tpf::corrector::setGraph(const TGraph &graph, int ieta, int iemf) {
     char buff[32];
-    if (is2d_) {
-        snprintf(buff, 31, "eta_bin%d_emf_bin%d", ieta+1, iemf+1);
-    } else {
-        snprintf(buff, 31, "eta_bin%d", ieta+1);
-    }
+    //if (is2d_) {
+    //    snprintf(buff, 31, "eta_bin%d_emf_bin%d", ieta+1, iemf+1);
+    //} else {
+    //    snprintf(buff, 31, "eta_bin%d", ieta+1);
+    //}
     TGraph *gclone = (TGraph *) graph.Clone(buff);
     delete corrections_[ieta * nemf_ + iemf];
     corrections_[ieta * nemf_ + iemf] = gclone;

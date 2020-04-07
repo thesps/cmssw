@@ -14,6 +14,8 @@ ak4PFL1Calo    = _ak4PFJets.clone(src = 'l1pfCandidates:Calo')
 ak4PFL1PF      = _ak4PFJets.clone(src = 'l1pfCandidates:PF')
 ak4PFL1Puppi   = _ak4PFJets.clone(src = 'l1pfCandidates:Puppi')
 
+from L1Trigger.Phase2L1Jets.L1PFJetProducer_cff import l1PFJets as _l1PFJets
+
 _correctedJets = cms.EDProducer("L1TCorrectedPFJetProducer", 
     jets = cms.InputTag("_tag_"),
     correctorFile = cms.string("L1Trigger/Phase2L1ParticleFlow/data/jecs/jecs.PU200.root"),
@@ -30,7 +32,8 @@ ak4PFL1PuppiCorrected = _correctedJets.clone(jets = 'ak4PFL1Puppi', correctorDir
 
 l1PFJets = cms.Sequence(
     ak4PFL1Calo + ak4PFL1PF + ak4PFL1Puppi +
-    ak4PFL1CaloCorrected + ak4PFL1PFCorrected + ak4PFL1PuppiCorrected
+    ak4PFL1CaloCorrected + ak4PFL1PFCorrected + ak4PFL1PuppiCorrected +
+    _l1PFJets
 )
 
 
