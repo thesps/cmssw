@@ -2,6 +2,7 @@
 #define L1PFTAU_PRDC_H
 
 #include <vector>
+#include <numeric>
 
 ////////////////////
 // FRAMEWORK HEADERS
@@ -12,6 +13,7 @@
 
 #include "DataFormats/Phase2L1ParticleFlow/interface/PFCandidate.h"
 #include "DataFormats/Phase2L1ParticleFlow/interface/PFJet.h"
+#include "DataFormats/Math/interface/deltaR.h"
 
 using namespace l1t;
 
@@ -39,3 +41,4 @@ class L1PFJetProducer : public edm::EDProducer {
 
 
 #endif
+
