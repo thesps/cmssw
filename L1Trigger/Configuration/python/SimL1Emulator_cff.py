@@ -162,16 +162,15 @@ from L1Trigger.Phase2L1ParticleFlow.l1ParticleFlow_cff import *
 phase2_SimL1Emulator += l1ParticleFlow
 
 from L1Trigger.Phase2L1ParticleFlow.l1pfJetMet_cff import *
-from L1Trigger.Phase2L1Jets.L1PFJetProducer_cff import L1PFJetProducer
-l1PFJetProducer = L1PFJetProducer.clone()
-l1PFJetProducer.L1PFObjects = cms.InputTag("l1pfCandidates", "PF")
+from L1Trigger.Phase2L1Jets.L1SeedConeJetProducer_cff import L1SeedConeJetProducer
+l1SeedConeJetProducer = L1SeedConeJetProducer.clone()
+l1SeedConeJetProducer.L1PFObjects = cms.InputTag("l1pfCandidates", "PF")
 # Describe here l1PFJets sequence
 # ###############################
 l1PFJets = cms.Sequence(
-  ak4PFL1Calo + ak4PFL1PF + ak4PFL1Puppi +
-  ak4PFL1CaloCorrected + ak4PFL1PFCorrected + ak4PFL1PuppiCorrected)
+  ak4PFL1Calo + ak4PFL1PF + ak4PFL1Puppi + ak4PFL1CaloCorrected
+  + ak4PFL1PFCorrected + ak4PFL1PuppiCorrected + l1SeedConeJetProducer)
 phase2_SimL1Emulator += l1PFJets
-phase2_SimL1Emulator += l1PFJetProducer
 # Describe here l1PFMets sequence
 # ###############################
 #l1PFMets = cms.Sequence(l1PFMetCalo + l1PFMetPF + l1PFMetPuppi)

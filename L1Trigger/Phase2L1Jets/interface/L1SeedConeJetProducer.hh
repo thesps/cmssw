@@ -18,11 +18,11 @@
 using namespace l1t;
 
 
-class L1PFJetProducer : public edm::EDProducer {
+class L1SeedConeJetProducer : public edm::EDProducer {
    public:
-  explicit L1PFJetProducer(const edm::ParameterSet&);
+  explicit L1SeedConeJetProducer(const edm::ParameterSet&);
 
-  ~L1PFJetProducer();
+  ~L1SeedConeJetProducer();
 
    private:
 

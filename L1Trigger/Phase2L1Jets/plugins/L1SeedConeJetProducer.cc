@@ -1,4 +1,4 @@
-#include "L1Trigger/Phase2L1Jets/interface/L1PFJetProducer.hh"
+#include "L1Trigger/Phase2L1Jets/interface/L1SeedConeJetProducer.hh"
 
 PFJet makeJet(std::vector<l1t::PFCandidate> parts){
 
@@ -32,30 +32,34 @@ PFJet makeJet(std::vector<l1t::PFCandidate> parts){
     return jet;
 }
 
-L1PFJetProducer::L1PFJetProducer(const edm::ParameterSet& cfg) : 
+L1SeedConeJetProducer::L1SeedConeJetProducer(const edm::ParameterSet& cfg) : 
     _coneSize( cfg.getParameter<double>("coneSize")),
     _nJets( cfg.getParameter<int>("nJets")),
     _l1PFToken( consumes<vector<l1t::PFCandidate>>(cfg.getParameter<edm::InputTag>("L1PFObjects")))
 {
-  produces< PFJetCollection >( "L1PFJets" ).setBranchAlias("L1PFJets");
+  produces< PFJetCollection >( "L1SeedConeJets" ).setBranchAlias("L1SeedConeJets");
 }
 
-void L1PFJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
+void L1SeedConeJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  std::unique_ptr<PFJetCollection> newPFJetCollection(new PFJetCollection);
+    std::unique_ptr<PFJetCollection> newPFJetCollection(new PFJetCollection);
 
-  edm::Handle<  l1t::PFCandidateCollection > l1PFCandidates;
-  iEvent.getByToken( _l1PFToken, l1PFCandidates);
-  l1t::PFCandidateCollection work;
+    edm::Handle<  l1t::PFCandidateCollection > l1PFCandidates;
+    iEvent.getByToken( _l1PFToken, l1PFCandidates);
+    l1t::PFCandidateCollection work;
 
-  std::copy((*l1PFCandidates).begin(), (*l1PFCandidates).end(), std::back_inserter(work));
+    std::copy((*l1PFCandidates).begin(), (*l1PFCandidates).end(), std::back_inserter(work));
 
-  std::sort(work.begin(), work.end(), [](l1t::PFCandidate i,l1t::PFCandidate j){return(i.pt() > j.pt());});   
+    std::sort(work.begin(), work.end(), [](l1t::PFCandidate i,l1t::PFCandidate j){return(i.pt() > j.pt());});   
 
-  std::vector<l1t::PFJet> jets;
-  jets.resize(_nJets);
+    std::vector<l1t::PFJet> jets;
+    jets.resize(_nJets);
+
+    bool done = false;
+    int nJet = 0;
  
-    for(int nJet = 0; nJet < _nJets; nJet++){
+    //for(int nJet = 0; nJet < _nJets; nJet++){
+    while(!done){
         // Take the first (highest pt) candidate as a seed
         l1t::PFCandidate seed = *work.begin();
         // Get the particles within a _coneSize of the seed
@@ -66,30 +70,31 @@ void L1PFJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
         // remove the clustered particles
         work.erase(std::remove_if(work.begin(), work.end(), [&](const l1t::PFCandidate &part){
                 return reco::deltaR<l1t::PFCandidate,l1t::PFCandidate>(seed, part) <= _coneSize;}), work.end());
+        done = (nJet >= _nJets) || work.size() == 0;
     } 
     std::sort(jets.begin(), jets.end(), [](l1t::PFJet i,l1t::PFJet j){return(i.pt() > j.pt());}); 
     std::copy(jets.begin(), jets.end(), std::back_inserter(*newPFJetCollection));
-    iEvent.put( std::move(newPFJetCollection) , "L1PFJets" );
+    iEvent.put( std::move(newPFJetCollection) , "L1SeedConeJets" );
 }
 
 /////////////
 // DESTRUCTOR
-L1PFJetProducer::~L1PFJetProducer()
+L1SeedConeJetProducer::~L1SeedConeJetProducer()
 {
 }  
 
 //////////
 // END JOB
-void L1PFJetProducer::endRun(const edm::Run& run, const edm::EventSetup& iSetup)
+void L1SeedConeJetProducer::endRun(const edm::Run& run, const edm::EventSetup& iSetup)
 {
 }
 
 ////////////
 // BEGIN JOB
-void L1PFJetProducer::beginRun(const edm::Run& run, const edm::EventSetup& iSetup )
+void L1SeedConeJetProducer::beginRun(const edm::Run& run, const edm::EventSetup& iSetup )
 {
 }
 
 
 #include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(L1PFJetProducer);
+DEFINE_FWK_MODULE(L1SeedConeJetProducer);

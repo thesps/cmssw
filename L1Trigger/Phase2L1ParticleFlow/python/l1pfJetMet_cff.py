@@ -14,7 +14,7 @@ ak4PFL1Calo    = _ak4PFJets.clone(src = 'l1pfCandidates:Calo')
 ak4PFL1PF      = _ak4PFJets.clone(src = 'l1pfCandidates:PF')
 ak4PFL1Puppi   = _ak4PFJets.clone(src = 'l1pfCandidates:Puppi')
 
-from L1Trigger.Phase2L1Jets.L1PFJetProducer_cff import l1PFJets as _l1PFJets
+from L1Trigger.Phase2L1Jets.L1SeedConeJetProducer_cff import L1SeedConeJetProducer
 
 _correctedJets = cms.EDProducer("L1TCorrectedPFJetProducer", 
     jets = cms.InputTag("_tag_"),
@@ -33,7 +33,7 @@ ak4PFL1PuppiCorrected = _correctedJets.clone(jets = 'ak4PFL1Puppi', correctorDir
 l1PFJets = cms.Sequence(
     ak4PFL1Calo + ak4PFL1PF + ak4PFL1Puppi +
     ak4PFL1CaloCorrected + ak4PFL1PFCorrected + ak4PFL1PuppiCorrected +
-    _l1PFJets
+    L1SeedConeJetProducer
 )
 
 
