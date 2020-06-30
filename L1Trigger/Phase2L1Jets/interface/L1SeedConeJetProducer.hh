@@ -15,9 +15,6 @@
 #include "DataFormats/Phase2L1ParticleFlow/interface/PFJet.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
-using namespace l1t;
-
-
 class L1SeedConeJetProducer : public edm::EDProducer {
    public:
   explicit L1SeedConeJetProducer(const edm::ParameterSet&);
@@ -34,7 +31,7 @@ class L1SeedConeJetProducer : public edm::EDProducer {
   /// ///////////////// ///
 
   float _coneSize;
-  int _nJets;
+  unsigned _nJets;
   edm::EDGetTokenT<vector<l1t::PFCandidate>>_l1PFToken;
 
 };
