@@ -15,11 +15,11 @@
 #include "DataFormats/Phase2L1ParticleFlow/interface/PFJet.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
-class L1SeedConeJetProducer : public edm::EDProducer {
+class L1SeedConePFJetProducer : public edm::EDProducer {
    public:
-  explicit L1SeedConeJetProducer(const edm::ParameterSet&);
+  explicit L1SeedConePFJetProducer(const edm::ParameterSet&);
 
-  ~L1SeedConeJetProducer();
+  ~L1SeedConePFJetProducer();
 
    private:
 

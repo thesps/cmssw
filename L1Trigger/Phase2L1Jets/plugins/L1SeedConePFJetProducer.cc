@@ -1,4 +1,4 @@
-#include "L1Trigger/Phase2L1Jets/interface/L1SeedConeJetProducer.hh"
+#include "L1Trigger/Phase2L1Jets/interface/L1SeedConePFJetProducer.hh"
 
 l1t::PFJet makeJet(std::vector<l1t::PFCandidate> parts){
 
@@ -32,7 +32,7 @@ l1t::PFJet makeJet(std::vector<l1t::PFCandidate> parts){
     return jet;
 }
 
-L1SeedConeJetProducer::L1SeedConeJetProducer(const edm::ParameterSet& cfg) : 
+L1SeedConePFJetProducer::L1SeedConePFJetProducer(const edm::ParameterSet& cfg) : 
     _coneSize( cfg.getParameter<double>("coneSize")),
     _nJets( cfg.getParameter<unsigned>("nJets")),
     _l1PFToken( consumes<vector<l1t::PFCandidate>>(cfg.getParameter<edm::InputTag>("L1PFObjects")))
@@ -40,7 +40,7 @@ L1SeedConeJetProducer::L1SeedConeJetProducer(const edm::ParameterSet& cfg) :
     produces< l1t::PFJetCollection >();
 }
 
-void L1SeedConeJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
+void L1SeedConePFJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     std::unique_ptr<l1t::PFJetCollection> newPFJetCollection(new l1t::PFJetCollection);
 
@@ -74,22 +74,22 @@ void L1SeedConeJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
 
 /////////////
 // DESTRUCTOR
-L1SeedConeJetProducer::~L1SeedConeJetProducer()
+L1SeedConePFJetProducer::~L1SeedConePFJetProducer()
 {
 }  
 
 //////////
 // END JOB
-void L1SeedConeJetProducer::endRun(const edm::Run& run, const edm::EventSetup& iSetup)
+void L1SeedConePFJetProducer::endRun(const edm::Run& run, const edm::EventSetup& iSetup)
 {
 }
 
 ////////////
 // BEGIN JOB
-void L1SeedConeJetProducer::beginRun(const edm::Run& run, const edm::EventSetup& iSetup )
+void L1SeedConePFJetProducer::beginRun(const edm::Run& run, const edm::EventSetup& iSetup )
 {
 }
 
 
 #include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(L1SeedConeJetProducer);
+DEFINE_FWK_MODULE(L1SeedConePFJetProducer);
