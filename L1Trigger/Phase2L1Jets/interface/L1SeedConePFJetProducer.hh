@@ -1,5 +1,5 @@
-#ifndef L1PFTAU_PRDC_H
-#define L1PFTAU_PRDC_H
+#ifndef L1SCPFJET_PRDC_H
+#define L1SCPFJET_PRDC_H
 
 #include <vector>
 #include <numeric>
