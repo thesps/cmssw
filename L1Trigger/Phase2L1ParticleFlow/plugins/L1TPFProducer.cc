@@ -22,6 +22,7 @@
 #include "L1Trigger/Phase2L1ParticleFlow/interface/PFAlgoBase.h"
 #include "L1Trigger/Phase2L1ParticleFlow/interface/PFAlgo3.h"
 #include "L1Trigger/Phase2L1ParticleFlow/interface/PFAlgo2HGC.h"
+#include "L1Trigger/Phase2L1ParticleFlow/interface/PFTkEGAlgo.h"
 #include "L1Trigger/Phase2L1ParticleFlow/interface/BitwisePFAlgo.h"
 #include "L1Trigger/Phase2L1ParticleFlow/interface/PuppiAlgo.h"
 #include "L1Trigger/Phase2L1ParticleFlow/interface/LinearizedPuppiAlgo.h"
@@ -30,6 +31,12 @@
 
 #include "DataFormats/L1TCorrelator/interface/TkMuon.h"
 #include "DataFormats/L1TCorrelator/interface/TkMuonFwd.h"
+
+#include "DataFormats/L1TCorrelator/interface/TkElectron.h"
+#include "DataFormats/L1TCorrelator/interface/TkElectronFwd.h"
+#include "DataFormats/L1Trigger/interface/EGamma.h"
+#include "DataFormats/L1TCorrelator/interface/TkEm.h"
+#include "DataFormats/L1TCorrelator/interface/TkEmFwd.h"
 
 //--------------------------------------------------------------------------------------------------
 class L1TPFProducer : public edm::stream::EDProducer<> {
@@ -62,6 +69,7 @@ private:
   l1tpf_impl::RegionMapper l1regions_;
   std::unique_ptr<l1tpf_impl::PFAlgoBase> l1pfalgo_;
   std::unique_ptr<l1tpf_impl::PUAlgoBase> l1pualgo_;
+  std::unique_ptr<l1tpf_impl::PFTkEGAlgo> l1tkegalgo_;
 
   edm::EDGetTokenT<math::XYZPointF> TokGenOrigin_;
 
@@ -100,6 +108,7 @@ L1TPFProducer::L1TPFProducer(const edm::ParameterSet& iConfig)
       l1regions_(iConfig),
       l1pfalgo_(nullptr),
       l1pualgo_(nullptr),
+      l1tkegalgo_(nullptr),
       regionDumpName_(iConfig.getUntrackedParameter<std::string>("dumpFileName", "")),
       regionCOEName_(iConfig.getUntrackedParameter<std::string>("coeFileName", "")),
       fRegionDump_(nullptr),
@@ -116,6 +125,11 @@ L1TPFProducer::L1TPFProducer(const edm::ParameterSet& iConfig)
   produces<l1t::PFCandidateCollection>("Calo");
   produces<l1t::PFCandidateCollection>("TK");
   produces<l1t::PFCandidateCollection>("TKVtx");
+
+  // FIXME: should this be conditional to running the right algorithm?
+  produces<BXVector<l1t::EGamma>>("L1Eg");
+  produces<l1t::TkElectronCollection>("L1TkEle");
+  produces<l1t::TkEmCollection>("L1TkEm");
 
   produces<float>("z0");
 
@@ -143,6 +157,16 @@ L1TPFProducer::L1TPFProducer(const edm::ParameterSet& iConfig)
     l1pualgo_.reset(new l1tpf_impl::LinearizedPuppiAlgo(iConfig));
   } else
     throw cms::Exception("Configuration", "Unsupported PUAlgo");
+
+
+  // const std::string& pualgo = iConfig.getParameter<std::string>("puAlgo");
+  l1tkegalgo_.reset(new l1tpf_impl::PFTkEGAlgo(iConfig));
+  // if (pualgo == "Puppi") {
+  //   l1pualgo_.reset(new l1tpf_impl::PuppiAlgo(iConfig));
+  // } else if (pualgo == "LinearizedPuppi") {
+  //   l1pualgo_.reset(new l1tpf_impl::LinearizedPuppiAlgo(iConfig));
+  // } else
+    // throw cms::Exception("Configuration", "Unsupported PUAlgo");
 
   std::string vtxAlgo = iConfig.getParameter<std::string>("vtxAlgo");
   if (vtxAlgo == "TP")
@@ -343,6 +367,7 @@ void L1TPFProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   // Then run PF in each region
   for (auto& l1region : l1regions_.regions()) {
     l1pfalgo_->runPF(l1region);
+    l1tkegalgo_->runTkEG(l1region);
     l1pualgo_->runChargedPV(l1region, z0);
   }
   // save PF into the event
@@ -367,6 +392,11 @@ void L1TPFProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   }
   // and save puppi
   iEvent.put(l1regions_.fetch(true), "Puppi");
+
+  l1regions_.putEgObjects(iEvent,  "L1Eg", "L1TkEm", "L1TkEle");
+  // iEvent.put(l1regions_.fetchEgs(), "L1Eg");
+  // iEvent.put(l1regions_.fetchTkEms(), "TkEm");
+  // iEvent.put(l1regions_.fetchTkEles(), "TkEle");
 
   // Then go do the multiplicities
 
