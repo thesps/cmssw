@@ -158,7 +158,6 @@ L1TPFProducer::L1TPFProducer(const edm::ParameterSet& iConfig)
   } else
     throw cms::Exception("Configuration", "Unsupported PUAlgo");
 
-
   // const std::string& pualgo = iConfig.getParameter<std::string>("puAlgo");
   l1tkegalgo_.reset(new l1tpf_impl::PFTkEGAlgo(iConfig));
   // if (pualgo == "Puppi") {
@@ -166,7 +165,7 @@ L1TPFProducer::L1TPFProducer(const edm::ParameterSet& iConfig)
   // } else if (pualgo == "LinearizedPuppi") {
   //   l1pualgo_.reset(new l1tpf_impl::LinearizedPuppiAlgo(iConfig));
   // } else
-    // throw cms::Exception("Configuration", "Unsupported PUAlgo");
+  // throw cms::Exception("Configuration", "Unsupported PUAlgo");
 
   std::string vtxAlgo = iConfig.getParameter<std::string>("vtxAlgo");
   if (vtxAlgo == "TP")
@@ -393,7 +392,7 @@ void L1TPFProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   // and save puppi
   iEvent.put(l1regions_.fetch(true), "Puppi");
 
-  l1regions_.putEgObjects(iEvent,  "L1Eg", "L1TkEm", "L1TkEle");
+  l1regions_.putEgObjects(iEvent, "L1Eg", "L1TkEm", "L1TkEle");
   // iEvent.put(l1regions_.fetchEgs(), "L1Eg");
   // iEvent.put(l1regions_.fetchTkEms(), "TkEm");
   // iEvent.put(l1regions_.fetchTkEles(), "TkEle");
