@@ -5,6 +5,8 @@
 #include "ap_fixed.h"
 #include <iostream>
 #include <vector>
+#include <numeric>
+#include <algorithm>
 
 namespace L1SCJetEmu {
   // Data types and constants used in the FPGA and FPGA-optimized functions
