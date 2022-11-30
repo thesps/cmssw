@@ -7,7 +7,7 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True), allowUnscheduled = cms.untracked.bool(False) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 process.source = cms.Source("PoolSource",
@@ -59,8 +59,10 @@ from L1Trigger.Phase2L1GMT.gmt_cfi import standaloneMuons
 process.L1SAMuonsGmt = standaloneMuons.clone()
 
 from L1Trigger.Phase2L1ParticleFlow.l1ctJetFileWriter_cfi import l1ctSeededConeJetFileWriter
-l1ctLayer2SCJetsProducts = cms.untracked.VPSet([cms.PSet(jets=cms.InputTag("sc4PFL1PuppiCorrectedEmulator")),
-                                              cms.PSet(jets=cms.InputTag("sc8PFL1PuppiCorrectedEmulator"))])
+l1ctLayer2SCJetsProducts = cms.untracked.VPSet([cms.PSet(jets = cms.InputTag("sc4PFL1PuppiCorrectedEmulator"),
+                                                         mht  = cms.InputTag("sc4PFL1PuppiCorrectedEmulatorMHT")),
+                                                cms.PSet(jets = cms.InputTag("sc8PFL1PuppiCorrectedEmulator"),
+                                                         mht  = cms.InputTag("sc8PFL1PuppiCorrectedEmulatorMHT"))])
 process.l1ctLayer2SeedConeJetWriter = l1ctSeededConeJetFileWriter.clone(collections = l1ctLayer2SCJetsProducts)
 >>>>>>> 5adaf41... Add SC8 jets. Rename SC jets to SC4. Add multiple outputs to jet file writer
 
