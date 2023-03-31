@@ -65,7 +65,7 @@ void L1MhtPfProducer::produce(edm::StreamID, edm::Event& iEvent, const edm::Even
 std::vector<l1ct::Jet> L1MhtPfProducer::convertEDMToHW(std::vector<l1t::PFJet> edmJets) const {
   std::vector<l1ct::Jet> hwJets;
   std::for_each(edmJets.begin(), edmJets.end(), [&](l1t::PFJet jet) {
-    l1ct::Jet hwJet = l1ct::Jet::unpack(jet.encodedJet());
+    l1ct::Jet hwJet = jet.getHWJetCT();
     hwJets.push_back(hwJet);
   });
   return hwJets;
@@ -84,8 +84,8 @@ std::vector<l1t::EtSum> L1MhtPfProducer::convertHWToEDM(l1ct::Sum hwSums) const 
   mhtVector.SetPhi(l1ct::Scales::floatPhi(hwSums.hwPhi));
   mhtVector.SetEta(0);
 
-  l1t::EtSum ht(htVector, l1t::EtSum::EtSumType::kTotalHt);
-  l1t::EtSum mht(mhtVector, l1t::EtSum::EtSumType::kMissingHt);
+  l1t::EtSum ht(htVector, l1t::EtSum::EtSumType::kTotalHt, hwSums.hwSumPt.bits_to_uint64());
+  l1t::EtSum mht(mhtVector, l1t::EtSum::EtSumType::kMissingHt, hwSums.hwPt.bits_to_uint64(), 0, hwSums.hwPhi);
 
   edmSums.push_back(ht);
   edmSums.push_back(mht);
