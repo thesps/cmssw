@@ -20,7 +20,7 @@ phase2_hgcalV11.toModify(_correctedJets, correctorFile = "L1Trigger/Phase2L1Part
 l1tSCPFL1PuppiCorrectedEmulator = _correctedJets.clone(jets = 'l1tSCPFL1PuppiEmulator', correctorDir = 'L1PuppiSC4EmuDeregJets')
 
 from L1Trigger.Phase2L1ParticleFlow.l1tMHTPFProducer_cfi import l1tMHTPFProducer
-l1tSCPFL1PuppiCorrectedEmulatorMHT = l1tMHTPFProducer.clone() 
+l1tSCPFL1PuppiCorrectedEmulatorMHT = l1tMHTPFProducer.clone(jets = 'l1tSCPFL1PuppiCorrectedEmulator')
 
 L1TPFJetsTask = cms.Task(
     l1tLayer2Deregionizer, l1tSCPFL1PF, l1tSCPFL1Puppi, l1tSCPFL1PuppiEmulator, l1tSCPFL1PuppiCorrectedEmulator, l1tSCPFL1PuppiCorrectedEmulatorMHT

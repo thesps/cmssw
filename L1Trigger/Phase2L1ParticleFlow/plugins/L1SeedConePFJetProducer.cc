@@ -178,8 +178,20 @@ std::vector<l1t::PFJet> L1SeedConePFJetProducer::convertHWToEDM(
     std::unordered_map<const l1t::PFCandidate*, edm::Ptr<l1t::PFCandidate>> constituentMap) {
   std::vector<l1t::PFJet> edmJets;
   std::for_each(hwJets.begin(), hwJets.end(), [&](L1SCJetEmu::Jet jet) {
-    l1t::PFJet edmJet(
-        jet.floatPt(), jet.floatEta(), jet.floatPhi(), /*mass=*/0., jet.intPt(), jet.intEta(), jet.intPhi());
+    if (doCorrections) {
+      float correctedPt = corrector.correctedPt(jet.floatPt(), jet.floatEta());
+      jet.hwPt = correctedPt;
+    }
+    l1gt::Jet gtJet = jet.toGT();
+    l1t::PFJet edmJet(l1gt::Scales::floatPt(gtJet.v3.pt),
+                      l1gt::Scales::floatEta(gtJet.v3.eta),
+                      l1gt::Scales::floatPhi(gtJet.v3.phi),
+                      /*mass=*/0.,
+                      gtJet.v3.pt.V,
+                      gtJet.v3.eta.V,
+                      gtJet.v3.phi.V);
+    edmJet.setEncodedJet(l1t::PFJet::HWEncoding::CT, jet.pack());
+    edmJet.setEncodedJet(l1t::PFJet::HWEncoding::GT, jet.toGT().pack());
     // get back the references to the constituents
     std::vector<edm::Ptr<l1t::PFCandidate>> constituents;
     std::for_each(jet.constituents.begin(), jet.constituents.end(), [&](auto constituent) {
