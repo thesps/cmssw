@@ -1,0 +1,10 @@
+<use name="root"/>
+<use name="CommonTools/UtilAlgos"/>
+<use name="FWCore/Framework"/>
+<use name="FWCore/ParameterSet"/>
+<use name="FWCore/ServiceRegistry"/>
+<use name="DataFormats/L1Trigger"/>
+<use name="hls"/>
+<use name="hls4mlEmulatorExtras"/>
+<flags EDM_PLUGIN="1"/>
+<Flags CXXFLAGS="-g"/>
