@@ -29,7 +29,7 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True), allowUnscheduled = cms.untracked.bool(False) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1008))
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 process.source = cms.Source("PoolSource",
@@ -43,8 +43,13 @@ process.source = cms.Source("PoolSource",
     skipEvents = cms.untracked.uint32(0),
 )
 
+<<<<<<< HEAD
 process.load('Configuration.Geometry.GeometryExtended2026D95Reco_cff')
 process.load('Configuration.Geometry.GeometryExtended2026D95_cff')
+=======
+process.load('Configuration.Geometry.GeometryExtended2026D100Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D100_cff')
+>>>>>>> 492c25e73be (Add a pattern file writer for deregionizer)
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff') # needed to read HCal TPs
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
@@ -82,7 +87,7 @@ l1ctLayer2SCJetsProducts = cms.VPSet([cms.PSet(jets = cms.InputTag("l1tSC4PFL1Pu
                                                nJets = cms.uint32(12))
                                       ])
 process.l1tLayer2SeedConeJetWriter = l1tSeededConeJetFileWriter.clone(collections = l1ctLayer2SCJetsProducts)
-
+process.l1tLayer2DeregionizerWriter = cms.EDAnalyzer('L1CTDeregionizerFileWriter')
 process.l1tLayer1BarrelTDR = process.l1tLayer1Barrel.clone()
 process.l1tLayer1BarrelTDR.regionizerAlgo = cms.string("TDR")
 process.l1tLayer1BarrelTDR.regionizerAlgoParameters = cms.PSet(
@@ -166,10 +171,12 @@ if not args.patternFilesOFF:
     process.l1tLayer2EG.outPatternFile.maxLinesPerFile = _eventsPerFile*54
 
 #####################################################################################################################
-## Layer 2 seeded-cone jets 
+## Layer 2 seeded-cone jets and deregionizer
 if not args.patternFilesOFF:
     process.runPF.insert(process.runPF.index(process.l1tSC8PFL1PuppiCorrectedEmulator)+1, process.l1tLayer2SeedConeJetWriter)
     process.l1tLayer2SeedConeJetWriter.maxLinesPerFile = _eventsPerFile*54
+    process.runPF.insert(process.runPF.index(process.l1tLayer2SeedConeJetWriter)+1, process.l1tLayer2DeregionizerWriter)
+    process.l1tLayer2DeregionizerWriter.maxLinesPerFile = cms.uint32(_eventsPerFile*54)
 
 if not args.dumpFilesOFF:
   for det in "Barrel", "BarrelTDR", "BarrelSerenity", "HGCal", "HGCalElliptic", "HGCalNoTK", "HF":
