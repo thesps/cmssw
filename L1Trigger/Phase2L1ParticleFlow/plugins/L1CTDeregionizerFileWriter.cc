@@ -101,7 +101,7 @@ void L1CTDeregionizerFileWriter::fillDescriptions(edm::ConfigurationDescriptions
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("L1PFObjects", edm::InputTag("l1tLayer2Deregionizer", "Puppi"));
   desc.add<std::string>("outputFilename", "L1CTDeregionizerPatterns");
-  desc.add<std::string>("outputFileExtension", "txt");
+  desc.add<std::string>("outputFileExtension", "txt.gz");
   desc.add<uint32_t>("nFramesPerBX", 9);
   desc.add<uint32_t>("gapLengthOutput", 4);
   desc.add<uint32_t>("TMUX", 6);
