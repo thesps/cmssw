@@ -42,9 +42,7 @@ private:
 
   std::vector<std::vector<ap_uint<64>>> encodePuppi(const std::vector<l1t::PFCandidate> particles, const int nrows);
 
-
   l1t::demo::BoardDataWriter fileWriterOutput_;
-  
 };
 
 L1CTDeregionizerFileWriter::L1CTDeregionizerFileWriter(const edm::ParameterSet& iConfig)
@@ -53,18 +51,19 @@ L1CTDeregionizerFileWriter::L1CTDeregionizerFileWriter(const edm::ParameterSet& 
       ctl2BoardTMUX_(iConfig.getParameter<unsigned>("TMUX")),
       gapLengthOutput_(iConfig.getParameter<unsigned>("gapLengthOutput")),
       maxLinesPerFile_(iConfig.getParameter<unsigned>("maxLinesPerFile")),
-      channelSpecsOutput_{{{"deregionizer", 0}, {{ctl2BoardTMUX_, gapLengthOutput_}, {0}}},
-                          {{"deregionizer", 1}, {{ctl2BoardTMUX_, gapLengthOutput_}, {1}}},
-                          {{"deregionizer", 2}, {{ctl2BoardTMUX_, gapLengthOutput_}, {2}}},
-                          {{"deregionizer", 3}, {{ctl2BoardTMUX_, gapLengthOutput_}, {3}}},
+      channelSpecsOutput_{
+          {{"deregionizer", 0}, {{ctl2BoardTMUX_, gapLengthOutput_}, {0}}},
+          {{"deregionizer", 1}, {{ctl2BoardTMUX_, gapLengthOutput_}, {1}}},
+          {{"deregionizer", 2}, {{ctl2BoardTMUX_, gapLengthOutput_}, {2}}},
+          {{"deregionizer", 3}, {{ctl2BoardTMUX_, gapLengthOutput_}, {3}}},
       },
       fileWriterOutput_(l1t::demo::parseFileFormat(iConfig.getParameter<std::string>("format")),
-                            iConfig.getParameter<std::string>("outputFilename"),
-                            iConfig.getParameter<std::string>("outputFileExtension"),
-                            nFramesPerBX_,
-                            ctl2BoardTMUX_,
-                            maxLinesPerFile_,
-                            channelSpecsOutput_) {}
+                        iConfig.getParameter<std::string>("outputFilename"),
+                        iConfig.getParameter<std::string>("outputFileExtension"),
+                        nFramesPerBX_,
+                        ctl2BoardTMUX_,
+                        maxLinesPerFile_,
+                        channelSpecsOutput_) {}
 
 void L1CTDeregionizerFileWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace edm;
@@ -73,7 +72,7 @@ void L1CTDeregionizerFileWriter::analyze(const edm::Event& iEvent, const edm::Ev
   std::vector<std::vector<ap_uint<64>>> link_words = encodePuppi(particles, 4);
 
   l1t::demo::EventData eventData;
-  for(size_t i = 0; i < 4; i++){
+  for (size_t i = 0; i < 4; i++) {
     eventData.add({"deregionizer", i}, link_words.at(i));
   }
   fileWriterOutput_.addEvent(eventData);
@@ -85,11 +84,12 @@ void L1CTDeregionizerFileWriter::endJob() {
   fileWriterOutput_.flush();
 }
 
-std::vector<std::vector<ap_uint<64>>> L1CTDeregionizerFileWriter::encodePuppi(const std::vector<l1t::PFCandidate> particles, const int nrows){
+std::vector<std::vector<ap_uint<64>>> L1CTDeregionizerFileWriter::encodePuppi(
+    const std::vector<l1t::PFCandidate> particles, const int nrows) {
   // 'reshape' the 1D View of particles to a 2D vector with nrows in the first dimension
   // pack the particles to their 64 bit HW representation
   std::vector<std::vector<ap_uint<64>>> particles_packed_reshaped(nrows);
-  for(uint i = 0; i < particles.size(); i++){
+  for (uint i = 0; i < particles.size(); i++) {
     ap_uint<64> p = particles.at(i).encodedPuppi64();
     particles_packed_reshaped[i % nrows].push_back(p);
   }
