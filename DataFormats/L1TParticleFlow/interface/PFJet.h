@@ -87,7 +87,7 @@ namespace l1t {
     std::vector<l1ct::JetTagClass> tagClasses_;
     std::vector<float> tagScores_;
     float ptCorrection_;
-    std::array<PackedJet, 3> encodedJet_ = {{ {{0, 0}}, {{0, 0}}, {{0, 0}} }};
+    std::array<PackedJet, 3> encodedJet_ = {{{{0, 0}}, {{0, 0}}, {{0, 0}}}};
   };
 
   typedef std::vector<l1t::PFJet> PFJetCollection;
