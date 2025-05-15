@@ -5,16 +5,69 @@
 #include "DataFormats/L1TParticleFlow/interface/gt_datatypes.h"
 #include "DataFormats/L1TParticleFlow/interface/bit_encoding.h"
 #include <array>
+#include <algorithm>
 #include <cstdint>
+#include <vector>
+#include <unordered_map>
 
 namespace l1ct {
+
+  // all possible tag categories (can be extended for new / separate taggers)
+  class JetTagClass {
+  public:
+    enum JetTagClassValue : uint8_t { b, c, uds, g, tau_p, tau_n, mu, e };
+    JetTagClass() = default;
+    JetTagClass(JetTagClassValue aJetTagClassValue) : value_(aJetTagClassValue) {}
+    JetTagClass(std::string aJetTagClassValueString) {
+      auto it = labels_.find(aJetTagClassValueString);
+      if (it != labels_.end()) {
+        value_ = it->second;
+      } else {
+        // TODO throw an error
+        value_ = JetTagClass::JetTagClassValue::uds;
+      }
+    }
+
+    inline bool operator==(const JetTagClass &other) const { return value_ == other.value_; }
+
+  private:
+    JetTagClassValue value_;
+    static const std::unordered_map<std::string, JetTagClassValue> labels_;
+
+    friend std::ostream &operator<<(std::ostream &ost, const l1ct::JetTagClass &jtc) {
+      auto it = std::find_if(
+          std::begin(jtc.labels_), std::end(jtc.labels_), [&jtc](auto &&p) { return p.second == jtc.value_; });
+      if (it != std::end(jtc.labels_)) {
+        ost << it->first;
+      }
+      return ost;
+    }
+
+  };  // JetTagClass
+
+  // Define a separate class/struct for jet tag handling
+  struct JetTagClassHandler {
+    static const unsigned NTagFields = 8;
+    static const JetTagClass tagClassesDefault_[NTagFields];
+
+    JetTagClass tagClassesArray[NTagFields];
+
+    JetTagClassHandler() {
+      // Copy the default values to the array
+      for (unsigned i = 0; i < NTagFields; i++) {
+        tagClassesArray[i] = tagClassesDefault_[i];
+      }
+    }
+  };
 
   struct Jet {
     pt_t hwPt;
     glbeta_t hwEta;
     glbphi_t hwPhi;
     z0_t hwZ0;
-    // b_tag_score_t hwBtagScore;
+
+    static const unsigned NTagFields = 8;
+    jet_tag_score_t hwTagScores[NTagFields];
     mass2_t hwMassSq;
 
     inline bool operator==(const Jet &other) const {
@@ -121,7 +174,6 @@ namespace l1ct {
       for (unsigned i = 0; i < NTagFields; i++) {
         j.hwTagScores[i] = hwTagScores[i];
       }
-      j.hwBtagScore = 0;
       return j;
     }
 

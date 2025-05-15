@@ -35,7 +35,7 @@ namespace l1ct {
   typedef ap_ufixed<10, 5, AP_TRN, AP_SAT> hoe_t;
   typedef ap_uint<4> redChi2Bin_t;
   typedef ap_fixed<10, 1, AP_RND_CONV, AP_SAT> id_score_t;  // ID score to be between -1 (background) and 1 (signal)
-  typedef ap_ufixed<10, 1, AP_RND, AP_SAT> b_tag_score_t;   // result_t from the NN is still apx_fixed<16,6>
+  typedef ap_ufixed<8, 1, AP_RND_CONV, AP_SAT> jet_tag_score_t;  // 8 bit jet jet probability from 0 to 1
 
   // FIXME: adjust range 10-11bits -> 1/4 - 1/2TeV is probably more than enough for all reasonable use cases
   typedef ap_ufixed<11, 9, AP_TRN, AP_SAT> iso_t;
@@ -145,7 +145,8 @@ namespace l1ct {
     constexpr float INTPT_LSB = 0.25;
     constexpr float ETAPHI_LSB = M_PI / INTPHI_PI;
     constexpr float Z0_LSB = 0.05;
-    constexpr float DXY_LSB = 0.05;
+    constexpr float DXY_LSB = 0.00390625;    // -16 to 16 / 2**13 from track word
+    constexpr float DXYSQRT_LSB = 0.015625;  //sqrt(abs(dxy)) 4/2**8 (8 bit for l1ct dxy)
     constexpr float PUPPIW_LSB = 1.0 / 256;
     constexpr float MEANZ_OFFSET = 320.;
     constexpr float SRRTOT_LSB = 0.0019531250;  // pow(2, -9)
@@ -177,7 +178,6 @@ namespace l1ct {
     inline float floatMeanZ(meanz_t meanz) { return meanz + MEANZ_OFFSET; };
     inline float floatHoe(hoe_t hoe) { return hoe.to_float(); };
     inline float floatIDScore(id_score_t score) { return score.to_float(); };
-    inline float floatBtagScore(b_tag_score_t b_tag_score) { return b_tag_score.to_float(); }
     inline float floatMass(mass2_t mass) { return mass.to_float(); }
 
     inline pt_t makePt(int pt) { return ap_ufixed<16, 14>(pt) >> 2; }
@@ -185,6 +185,7 @@ namespace l1ct {
     inline pt_t makePtFromFloat(float pt) { return pt_t(0.25 * std::round(pt * 4)); }
     inline dpt_t makeDPtFromFloat(float dpt) { return dpt_t(dpt); }
     inline z0_t makeZ0(float z0) { return z0_t(std::round(z0 / Z0_LSB)); }
+    inline dxy_t makeDxy(float dxy) { return dxy_t(std::round(dxy / DXYSQRT_LSB)); }  // l1ct stores sqrt(dxy)
 
     inline ap_uint<pt_t::width> ptToInt(pt_t pt) {
       // note: this can be synthethized, e.g. when pT is used as intex in a LUT
