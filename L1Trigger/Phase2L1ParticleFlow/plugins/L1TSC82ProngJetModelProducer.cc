@@ -49,7 +49,7 @@ L1TSC82ProngJetProducer::L1TSC82ProngJetProducer(const edm::ParameterSet& cfg)
       fMaxEta_(cfg.getParameter<double>("maxEta")),
       fMaxJets_(cfg.getParameter<int>("maxJets")),
       fNParticles_(cfg.getParameter<int>("nParticles")),
-      loader(hls4mlEmulator::ModelLoader(cfg.getParameter<string>("l1tSC4NGJetModelPath"))) {
+      loader(hls4mlEmulator::ModelLoader(cfg.getParameter<string>("l1tSC82ProngJetModelPath"))) {
 
   model = loader.load_model();
   fJetId_ = std::make_unique<L1TSC82ProngJetID>(model, fNParticles_);
@@ -70,12 +70,12 @@ void L1TSC82ProngJetProducer::produce(edm::Event& iEvent, const edm::EventSetup&
       continue;
     }
 
-    l1gt::WideJet gtwHWJet = l1gt::WideJet::unpack(srcjet.getHWJetGTWide());
     std::vector<float> JetProngScore_float = fJetId_->computeFixed(srcjet);
     
-    gtwHWJet.hwNProngScore = JetProngScore_float[0]; // Get the 2-prong_score.
+    ctHWJet.hwTagScores[0] = JetProngScore_float[0];
+
+    l1gt::WideJet gtwHWJet = l1gt::WideJet::unpack(srcjet.getHWJetGTWide());
     
-    //l1gt::Jet gtHWJet = ctHWJet.toGT();
     l1t::PFJet edmJet(srcjet.pt(),
                             srcjet.eta(),
                             srcjet.phi(),
@@ -84,9 +84,9 @@ void L1TSC82ProngJetProducer::produce(edm::Event& iEvent, const edm::EventSetup&
                             gtwHWJet.v3.eta.V,
                             gtwHWJet.v3.phi.V);
   
-    //edmJet.setEncodedJet(l1t::PFJet::HWEncoding::GT, gtHWJet.pack());
+    std::vector<l1ct::JetTagClass> classes {l1ct::JetTagClass(l1ct::JetTagClass::JetTagClassValue::nprong)};
+    edmJet.addTagScores(JetProngScore_float, classes, 1.);
     edmJet.setEncodedJet(l1t::PFJet::HWEncoding::CT, ctHWJet.pack());
-    l1gt::WideJet gtHWJet = ctHWJet.toGTWide();
     edmJet.setEncodedJet(l1t::PFJet::HWEncoding::GTWide, gtwHWJet.pack());
 
 
@@ -106,7 +106,7 @@ void L1TSC82ProngJetProducer::produce(edm::Event& iEvent, const edm::EventSetup&
 
 void L1TSC82ProngJetProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.add<edm::InputTag>("jets", edm::InputTag("l1tSC8PFL1PuppiExtendedEmulator"));
+  desc.add<edm::InputTag>("jets", edm::InputTag("l1tSC8PFL1PuppiEmulator"));
   desc.add<std::string>("l1tSC82ProngJetModelPath", std::string("L1TSC82ProngJetModel_v0"));
   desc.add<int>("maxJets", 16);
   desc.add<int>("nParticles", 8);
