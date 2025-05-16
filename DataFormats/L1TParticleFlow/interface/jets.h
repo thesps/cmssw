@@ -131,7 +131,7 @@ namespace l1ct {
       std::array<uint64_t, 2> packed = {{0, 0}};
       ap_uint<BITWIDTH> bits = this->pack_ap();
       packed[0] = bits(63, 0);
-      packed[1] = bits[slice]; // for when there are more than 64 bits in the word
+      packed[1] = bits(BITWIDTH-1, 64); // for when there are more than 64 bits in the word
       return packed;
     }
 
@@ -193,7 +193,7 @@ namespace l1ct {
       j.v3.phi = CTtoGT_phi(hwPhi);
       j.v3.eta = CTtoGT_eta(hwEta);
       j.z0(l1ct::z0_t::width - 1, 0) = hwZ0(l1ct::z0_t::width - 1, 0);
-      j.hwNProngScore = 0;
+      j.hwNProngScore = hwTagScores[0]; // currently only one WideJet tagger
       j.hwMassSq = CTtoGT_massSq(hwMassSq);
       return j;
     }
