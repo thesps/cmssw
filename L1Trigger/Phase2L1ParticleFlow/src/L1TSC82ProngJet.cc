@@ -52,7 +52,7 @@ void L1TSC82ProngJetID::setNNVectorVar() {
 }
 
 std::vector<float> L1TSC82ProngJetID::EvaluateNNFixed() {
-  const int NInputs = 320;
+  const int NInputs = 136;
   prong_score prong_scores;
   //regressiontype regressionresult;
 

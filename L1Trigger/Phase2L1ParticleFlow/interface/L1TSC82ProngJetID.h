@@ -17,7 +17,7 @@ public:
   L1TSC82ProngJetID(const std::shared_ptr<hls4mlEmulator::Model> model, int iNParticles);
 
   typedef ap_fixed<24,12, AP_RND, AP_SAT, 0> inputtype;
-  typedef std::array<ap_ufixed<16, 6, AP_RND, AP_SAT, 0>, 2> prong_score;
+  typedef std::array<ap_fixed<16, 6>, 2> prong_score;
 
   void setNNVectorVar();
   std::vector<float> EvaluateNNFixed();
