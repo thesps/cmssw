@@ -80,7 +80,7 @@ process.L1TInputTask = cms.Task(
 
 
 from L1Trigger.Phase2L1ParticleFlow.l1tJetFileWriter_cfi import l1tSeededConeJetFileWriter
-l1ctLayer2SCJetsProducts = cms.VPSet([cms.PSet(jets = cms.InputTag("l1tSC4NGJetProducer","l1tSC4NGJets"),
+l1ctLayer2SCJetsProducts = cms.VPSet([cms.PSet(jets = cms.InputTag("l1tSC4PFL1PuppiCorrectedEmulator"),
                                                nJets = cms.uint32(12),
                                                mht  = cms.InputTag("l1tSC4PFL1PuppiCorrectedEmulatorMHT"),
                                                nSums = cms.uint32(2),
@@ -89,7 +89,17 @@ l1ctLayer2SCJetsProducts = cms.VPSet([cms.PSet(jets = cms.InputTag("l1tSC4NGJetP
                                                nJets = cms.uint32(12),
                                                jetEncoding = cms.string("GTWide"))
                                       ])
-process.l1tLayer2SeedConeJetWriter = l1tSeededConeJetFileWriter.clone(collections = l1ctLayer2SCJetsProducts)
+l1ctLayer2NGJetsProducts = cms.VPSet([cms.PSet(jets = cms.InputTag("l1tSC4NGJetProducer","l1tSC4NGJets"),
+                                               nJets = cms.uint32(12),
+                                               mht  = cms.InputTag("l1tSC4PFL1PuppiCorrectedEmulatorMHT"),
+                                               nSums = cms.uint32(2),
+                                               jetEncoding = cms.string("GT")),
+                                      cms.PSet(jets = cms.InputTag("l1tSC8PFL1PuppiCorrectedEmulator"),
+                                               nJets = cms.uint32(12),
+                                               jetEncoding = cms.string("GTWide"))
+                                      ])
+process.l1tLayer2SeedConeJetWriter = l1tSeededConeJetFileWriter.clone(outputFilename = cms.string('L1CTSCJetsPatterns'), collections = l1ctLayer2SCJetsProducts)
+process.l1tLayer2NextGenJetWriter = l1tSeededConeJetFileWriter.clone(outputFilename = cms.string('L1CTNGJetsPatterns'), collections = l1ctLayer2NGJetsProducts)
 
 process.l1tLayer1BarrelTDR = process.l1tLayer1Barrel.clone()
 process.l1tLayer1BarrelTDR.regionizerAlgo = cms.string("TDR")
@@ -231,7 +241,9 @@ if not args.patternFilesOFF:
 ## Layer 2 seeded-cone jets
 if not args.patternFilesOFF:
     process.runPF.insert(process.runPF.index(process.l1tSC8PFL1PuppiCorrectedEmulator)+1, process.l1tLayer2SeedConeJetWriter)
+    process.runPF.insert(process.runPF.index(process.l1tSC8PFL1PuppiCorrectedEmulator)+1, process.l1tLayer2NextGenJetWriter)
     process.l1tLayer2SeedConeJetWriter.maxLinesPerFile = _eventsPerFile*54
+    process.l1tLayer2NextGenJetWriter.maxLinesPerFile = _eventsPerFile*54
 
 if not args.dumpFilesOFF:
     for det in "Barrel", "BarrelTDR", "BarrelSerenity", "HGCal", "HGCalElliptic", "HGCalNoTK", "HF":
